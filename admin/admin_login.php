@@ -1,6 +1,32 @@
 <?php
 include '../database/connection.php';
+session_start();
+if (isset($_SESSION['admin_id'])) {
+    header('location:dashboard.php');
+}
 
+if (isset($_POST['email']) && isset($_POST['password'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    $query = "SELECT * FROM tbl_admin WHERE email = :email";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmt->execute();
+    if ($stmt->rowCount() == 1) {
+        $admin_id = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (sha1($password) === $admin_id['password']) {
+            $_SESSION['admin_id'] = $admin_id['id'];
+            header('Location: dashboard.php');
+            exit();
+        } else {
+            $_SESSION['error_message'] = "Invalid password!";
+        }
+    } else {
+        $_SESSION['error_message'] = "No user found with that email address!";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -9,12 +35,10 @@ include '../database/connection.php';
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>Crisis Management System</title>
-    <!-- Favicon-->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet"
-        type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
 
     <!-- Bootstrap Core Css -->
@@ -49,6 +73,14 @@ include '../database/connection.php';
             <div class="body">
                 <form id="sign_in" method="POST">
                     <div class="msg"><span style="font-size: 30px;">Admin Login</span></div>
+                    <?php
+                    // Check if error message is set in session
+                    if (isset($_SESSION['error_message'])) {
+                        echo '<div class="alert alert-danger">' . $_SESSION['error_message'] . '</div>';
+                        // Clear the error message after displaying
+                        unset($_SESSION['error_message']);
+                    }
+                    ?>
                     <div class="input-group">
                         <span class="input-group-addon">
                             <i class="material-icons">email</i>
