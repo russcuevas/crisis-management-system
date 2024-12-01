@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include '../database/connection.php';
 
 session_start();
@@ -6,6 +6,11 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
+
+//fetch feedback
+$get_feedback = "SELECT * FROM `tbl_feedback`";
+$get_stmt = $conn->query($get_feedback);
+$feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html>
@@ -126,7 +131,7 @@ if (!isset($admin_id)) {
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="users.php">
                             <i class="material-icons">groups</i>
                             <span>Users</span>
@@ -134,7 +139,7 @@ if (!isset($admin_id)) {
                     </li>
 
 
-                    <li>
+                    <li class="active">
                         <a href="feedback.php">
                             <i class="material-icons">feedback</i>
                             <span>Feedback</span>
@@ -257,8 +262,8 @@ if (!isset($admin_id)) {
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
                     <li><a href="index.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">groups</i>
-                        Users Management
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">feedback</i>
+                        Feedback
                     </li>
                 </ol>
             </div>
@@ -269,31 +274,78 @@ if (!isset($admin_id)) {
                     <div class="card">
                         <div class="header">
                             <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                USERS MANAGEMENT
+                                FEEDBACK MANAGEMENT
                             </h2>
                         </div>
                         <div class="body">
+
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['feedback_deleted'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['feedback_deleted']; ?>
+                                    <?php unset($_SESSION['feedback_deleted']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['feedback_error'])): ?>
+                                <div class="alert alert-error">
+                                    <?php echo $_SESSION['feedback_error']; ?>
+                                    <?php unset($_SESSION['feedback_error']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
                                     <thead>
                                         <tr>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
+                                            <th>#</th>
+                                            <th>Sender</th>
+                                            <th>Email</th>
+                                            <th>Feedback</th>
+                                            <th>Created At</th>
+                                            <th>Updated At</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                        </tr>
+                                        <?php foreach ($feedbacks as $feedback) : ?>
+                                            <tr>
+                                                <td><?php echo $feedback['id'] ?></td>
+                                                <td><?php echo $feedback['fullname'] ?></td>
+                                                <td><?php echo $feedback['email'] ?></td>
+                                                <td><?php echo $feedback['feedback'] ?></td>
+                                                <td><?php echo $feedback['created_at'] ?></td>
+                                                <td><?php echo $feedback['updated_at'] ?></td>
+
+                                                <td>
+                                                    <a href="javascript:void(0);" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" onclick="setDeleteUrl(<?php echo $feedback['id']; ?>)">DELETE</a>
+                                                </td>
+
+                                                <!-- DELETE MODAL -->
+                                                <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Are you sure you want to delete this feedback?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Delete</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- END DELETE MODAL -->
+                                            </tr>
+                                        <?php endforeach ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -356,6 +408,16 @@ if (!isset($admin_id)) {
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+
+
+    <!-- FUNCTION DELETING FEEDBACK -->
+    <script type="text/javascript">
+        function setDeleteUrl(feedbackId) {
+            var deleteUrl = 'delete_feedback.php?id=' + feedbackId;
+            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
+        }
+    </script>
+
 </body>
 
 </html>

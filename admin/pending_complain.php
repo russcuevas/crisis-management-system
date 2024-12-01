@@ -133,6 +133,13 @@ if (!isset($admin_id)) {
                         </a>
                     </li>
 
+                    <li>
+                        <a href="feedback.php">
+                            <i class="material-icons">feedback</i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+
                     <li class="active">
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">crisis_alert</i>
@@ -188,7 +195,7 @@ if (!isset($admin_id)) {
                     </ul>
                     <ul style="list-style-type: none;">
                         <li>
-                            <a href="" style="margin-top: 15px; margin-left: -30px; font-weight: 900; font-size: 15px; text-decoration: none; cursor: pointer; color: black"><i class=" material-icons mr-2" style="font-size: 18px; vertical-align: middle;">exit_to_app</i> Logout</a>
+                            <a href="admin_logout.php" style="margin-top: 15px; margin-left: -30px; font-weight: 900; font-size: 15px; text-decoration: none; cursor: pointer; color: black"><i class=" material-icons mr-2" style="font-size: 18px; vertical-align: middle;">exit_to_app</i> Logout</a>
                         </li>
                     </ul>
                 </div>

@@ -2,7 +2,28 @@
 session_start();
 include('database/connection.php');
 $is_logged_in = isset($_SESSION['user_id']);
+
+// feedback query
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $fullname = $_POST['fullname'];
+    $email = $_POST['email'];
+    $feedback = $_POST['feedback'];
+
+    $stmt = $conn->prepare("INSERT INTO `tbl_feedback` (email, feedback, fullname) VALUES (?, ?, ?)");
+    $stmt->execute([$email, $feedback, $fullname]);
+
+    if ($stmt) {
+        $_SESSION['success'] = 'Thank you for sending your feedback!';
+        header('Location: about.php');
+        exit;
+    } else {
+        $_SESSION['error'] = 'Feedback not sent successfully';
+        header('Location: about.php');
+        exit;
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -127,16 +148,16 @@ $is_logged_in = isset($_SESSION['user_id']);
                     <div class="feedback-form">
                         <form action="#" method="POST">
                             <div class="mb-3">
-                                <label for="userName" class="form-label">Your Name</label>
-                                <input type="text" class="form-control" id="userName" name="userName" required>
+                                <label for="fullname" class="form-label">Your Name</label>
+                                <input type="text" class="form-control" id="fullname" name="fullname" required>
                             </div>
                             <div class="mb-3">
-                                <label for="userEmail" class="form-label">Your Email</label>
-                                <input type="email" class="form-control" id="userEmail" name="userEmail" required>
+                                <label for="email" class="form-label">Your Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
                             </div>
                             <div class="mb-3">
-                                <label for="feedbackMessage" class="form-label">Your Feedback</label>
-                                <textarea class="form-control" id="feedbackMessage" name="feedbackMessage" rows="4"
+                                <label for="feedback" class="form-label">Your Feedback</label>
+                                <textarea class="form-control" id="feedback" name="feedback" rows="4"
                                     required></textarea>
                             </div>
                             <div class="text-end">
@@ -174,6 +195,28 @@ $is_logged_in = isset($_SESSION['user_id']);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+    <!-- Include SweetAlert2 library -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Check if the session has success or error message
+        <?php if (isset($_SESSION['success'])): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '<?php echo $_SESSION['success']; ?>',
+                confirmButtonText: 'OK'
+            });
+            <?php unset($_SESSION['success']); ?>
+        <?php elseif (isset($_SESSION['error'])): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<?php echo $_SESSION['error']; ?>',
+                confirmButtonText: 'OK'
+            });
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+    </script>
 
 </body>
 

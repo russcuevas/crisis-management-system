@@ -134,6 +134,13 @@ if (!isset($admin_id)) {
                     </li>
 
                     <li>
+                        <a href="feedback.php">
+                            <i class="material-icons">feedback</i>
+                            <span>Feedback</span>
+                        </a>
+                    </li>
+
+                    <li>
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">crisis_alert</i>
                             <span>Posts Incedents</span>
