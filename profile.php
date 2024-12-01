@@ -207,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <div class="form-group form-float" style="margin-top: 10px !important;">
                                         <label style="color: #212529; font-weight: 600;" class="form-label">Contact Number</label>
                                         <div class="form-line">
-                                            <input type="tel" class="form-control" name="contact" value="<?php echo htmlspecialchars($contact_number); ?>" maxlength="12" minlength="6" required>
+                                            <input type="number" class="form-control" name="contact" value="<?php echo htmlspecialchars($contact_number); ?>" maxlength="11" minlength="11" required>
                                         </div>
                                     </div>
 

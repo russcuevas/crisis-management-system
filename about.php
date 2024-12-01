@@ -36,7 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/home.css">
+    <style>
+        /* validation */
+        #fullname-error {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
 
+        #email-error {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #feedback-error {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        .form-group .form-line.error {
+            border: 2px solid red !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -146,21 +172,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <!-- Feedback Form Column (Left) -->
                 <div class="col-12 col-md-6 mb-4">
                     <div class="feedback-form">
-                        <form action="#" method="POST">
-                            <div class="mb-3">
-                                <label for="fullname" class="form-label">Your Name</label>
-                                <input type="text" class="form-control" id="fullname" name="fullname" required>
+                        <form id="form_advanced_validation" action="#" method="POST">
+
+                            <div class="form-group form-float" style="margin-top: 10px !important;">
+                                <label style="color: #212529; font-weight: 600;" class="form-label">Your Name</label>
+                                <div class="form-line">
+                                    <input type="text" class="form-control" name="fullname" required>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Your Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+
+
+                            <div class="form-group form-float" style="margin-top: 10px !important;">
+                                <label style="color: #212529; font-weight: 600;" class="form-label">Email</label>
+                                <div class="form-line">
+                                    <input type="text" class="form-control" name="email" required>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="feedback" class="form-label">Your Feedback</label>
-                                <textarea class="form-control" id="feedback" name="feedback" rows="4"
-                                    required></textarea>
+
+
+                            <div class="form-group form-float" style="margin-top: 10px !important;">
+                                <label style="color: #212529; font-weight: 600;" class="form-label">Your feedback</label>
+                                <div class="form-line">
+                                    <textarea name="feedback" cols="30" rows="5" class="form-control no-resize" required="" aria-required="true" aria-invalid="true"></textarea>
+                                </div>
                             </div>
-                            <div class="text-end">
+
+                            <div class="text-end mt-5">
                                 <button type="submit" class="btn btn-primary">Submit Feedback</button>
                             </div>
                         </form>
@@ -191,6 +228,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 href="#">Terms</a></p>
     </footer>
 
+    <!-- JQUERY -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
     <!-- Bootstrap 5 JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -218,6 +257,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endif; ?>
     </script>
 
+    <!-- JQUERY VALIDATION -->
+    <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="assets/js/pages/forms/form-validation.js"></script>
 </body>
 
 </html>

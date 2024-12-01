@@ -141,7 +141,6 @@ footer a:hover {
 .nav-item .dropdown-item.active {
     background-color: #bc1823 !important;
     color: #fff !important;
-    /* Ensure text is readable on the red background */
 }
 
 .nav-item .dropdown-item:hover {
