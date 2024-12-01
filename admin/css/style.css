@@ -10587,6 +10587,7 @@ fieldset[disabled] .form-control {
 }
 
 /* Login Page ================================== */
+/* Login Page ================================== */
 .login-page {
   background-color: #00BCD4;
   padding-left: 0;
@@ -10609,14 +10610,22 @@ fieldset[disabled] .form-control {
 
 .login-page .login-box .logo {
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-page .login-box .logo a {
-  font-size: 36px;
-  display: block;
-  width: 100%;
-  text-align: center;
+  display: flex;
+  align-items: center;
   color: #fff;
+}
+
+.login-page .logo-img {
+  width: 70px;
+  height: 70px;
+  margin-right: 10px;
+  border-radius: 50%;
 }
 
 .login-page .login-box .logo small {
