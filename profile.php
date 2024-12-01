@@ -1,13 +1,82 @@
 <?php
 session_start();
 include('database/connection.php');
+$is_logged_in = isset($_SESSION['user_id']);
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
 
-$is_logged_in = isset($_SESSION['user_id']);
+$user_id = $_SESSION['user_id'];
+$get_user = "SELECT fullname, email, contact, province, purok, barangay, municipality, profile_picture FROM tbl_users WHERE id = ?";
+$stmt = $conn->prepare($get_user);
+$stmt->bindParam(1, $user_id, PDO::PARAM_INT);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+if ($user) {
+    $fullname = $user['fullname'];
+    $email = $user['email'];
+    $contact_number = $user['contact'];
+    $province = $user['province'];
+    $purok = $user['purok'];
+    $barangay = $user['barangay'];
+    $municipality = $user['municipality'];
+    $profile_picture = $user['profile_picture'];
+} else {
+    echo "User not found.";
+    exit();
+}
+
+//update profile
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = $_POST['email'];
+    $contact = $_POST['contact'];
+    $province = $_POST['province'];
+    $purok = $_POST['purok'];
+    $barangay = $_POST['barangay'];
+    $municipality = $_POST['municipality'];
+    $new_password = $_POST['password'];
+    $confirm_password = $_POST['password_confirmation'];
+
+    if (!empty($new_password) && $new_password !== $confirm_password) {
+        $_SESSION['error'] = 'Passwords do not match!';
+        header('Location: profile.php');
+        exit();
+    }
+
+    if (!empty($new_password)) {
+        $hashed_password = sha1($new_password);
+
+        $query = "UPDATE tbl_users SET password = :password, contact = :contact, province = :province, 
+                  purok = :purok, barangay = :barangay, municipality = :municipality WHERE id = :user_id";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':password', $hashed_password);
+    } else {
+        $query = "UPDATE tbl_users SET contact = :contact, province = :province, purok = :purok, 
+                  barangay = :barangay, municipality = :municipality WHERE id = :user_id";
+        $stmt = $conn->prepare($query);
+    }
+
+    $stmt->bindParam(':contact', $contact);
+    $stmt->bindParam(':province', $province);
+    $stmt->bindParam(':purok', $purok);
+    $stmt->bindParam(':barangay', $barangay);
+    $stmt->bindParam(':municipality', $municipality);
+    $stmt->bindParam(':user_id', $user_id);
+
+    if ($stmt->execute()) {
+        $_SESSION['success'] = 'Profile updated successfully!';
+        header('Location: profile.php');
+        exit();
+    } else {
+        $_SESSION['error'] = 'Failed to update profile!';
+        header('Location: profile.php');
+        exit();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,121 +85,12 @@ $is_logged_in = isset($_SESSION['user_id']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - Crisis Management System</title>
-
-    <!-- Bootstrap 5 CSS -->
+    <title>Crisis Management System</title>
+    <!-- CUSTOM CSS AND BOOTSTRAP -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            color: #333333;
-        }
-
-        .navbar {
-            background-color: #bc1823 !important;
-            padding: 15px;
-        }
-
-        .navbar .navbar-brand {
-            font-weight: 600;
-            font-size: 15px;
-            color: #fff;
-        }
-
-        .navbar .navbar-nav .nav-link {
-            color: #fff;
-        }
-
-        .navbar .navbar-nav .nav-link:hover {
-            color: black;
-        }
-
-        .navbar-toggler-icon {
-            color: white !important;
-        }
-
-        .profile-container {
-            padding: 30px;
-        }
-
-        .profile-box-header {
-            border: 2px dotted #bc1823;
-            padding: 30px;
-            font-size: 1.1rem;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 15px;
-            background-color: #f8f8f8;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .profile-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .profile-header img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-        }
-
-        .profile-header h2 {
-            font-size: 2.5rem;
-            color: #bc1823;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .profile-details {
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            font-size: 1.1rem;
-            max-width: 500px;
-            width: 100%;
-            margin: 0 auto;
-            margin-top: 5px;
-        }
-
-        .profile-details p {
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .update-btn {
-            display: block;
-            width: 200px;
-            margin: 20px auto;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-
-        footer {
-            background-color: #bc1823;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        footer a {
-            color: black;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/profile.css">
 </head>
 
 <body>
@@ -188,27 +148,28 @@ $is_logged_in = isset($_SESSION['user_id']);
         </div>
     </nav>
 
-    <!-- Profile Section -->
     <div class="profile-container">
         <div class="profile-box-header">
             <div class="profile-header">
-                <img src="https://via.placeholder.com/150" alt="User Photo">
-                <h2>Sample</h2>
+                <?php if ($profile_picture): ?>
+                    <img src="assets/images/profile/<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" />
+                <?php else: ?>
+                    <p>No profile picture available.</p>
+                <?php endif; ?>
+                <h2><?php echo htmlspecialchars($fullname); ?></h2>
             </div>
         </div>
 
         <div class="profile-details">
-            <p><strong>Email:</strong> sample@example.com</p>
-            <p><strong>Contact Number:</strong> +63 912 345 6789</p>
-            <p><strong>Purok:</strong> 5</p>
-            <p><strong>Barangay:</strong> San Isidro</p>
-            <p><strong>Municipality:</strong> Tarlac City</p>
-            <!-- Update Button -->
-            <button class="btn btn-warning update-btn" data-bs-toggle="modal"
-                data-bs-target="#updateProfileModal">Update Profile</button>
+            <p><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></p>
+            <p><strong>Contact Number:</strong> <?php echo htmlspecialchars($contact_number); ?></p>
+            <p><strong>Province:</strong> <?php echo htmlspecialchars($province); ?></p>
+            <p><strong>Purok:</strong> <?php echo htmlspecialchars($purok); ?></p>
+            <p><strong>Barangay:</strong> <?php echo htmlspecialchars($barangay); ?></p>
+            <p><strong>Municipality:</strong> <?php echo htmlspecialchars($municipality); ?></p>
+            <button class="btn btn-warning update-btn" data-bs-toggle="modal" data-bs-target="#updateProfileModal">Update Profile</button>
         </div>
 
-        <!-- Update Form -->
         <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -218,50 +179,73 @@ $is_logged_in = isset($_SESSION['user_id']);
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <form>
-                            <!-- Left side fields (Email, Password) -->
+                        <form id="form_advanced_validation" method="POST" action="">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label">Email Address</label>
-                                        <input type="email" class="form-control" id="email" value="sample@gmail.com">
+                                    <div class="form-group form-float">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Email <span style="color: green; font-size: 15px;">(Verified)</span></label>
+                                        <div class="form-line">
+                                            <input style="background-color: lightgray !important;" type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="password" class="form-label">New Password</label>
-                                        <input type="password" class="form-control" id="password"
-                                            placeholder="Enter new password">
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">New Password</label>
+                                        <div class="form-line">
+                                            <input type="password" class="form-control" name="password" maxlength="12" minlength="6">
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                        <input type="password" class="form-control" id="confirmPassword"
-                                            placeholder="Confirm new password">
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Confirm Password</label>
+                                        <div class="form-line">
+                                            <input type="password" class="form-control" name="password_confirmation" maxlength="12" minlength="6">
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="contactNumber" class="form-label">Contact Number</label>
-                                        <input type="tel" class="form-control" id="contactNumber"
-                                            value="+63 912 345 6789">
+
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Contact Number</label>
+                                        <div class="form-line">
+                                            <input type="tel" class="form-control" name="contact" value="<?php echo htmlspecialchars($contact_number); ?>" maxlength="12" minlength="6" required>
+                                        </div>
                                     </div>
+
                                 </div>
 
-                                <!-- Right side fields (Purok, Barangay, Municipality) -->
                                 <div class="col-md-6 ms-auto">
-                                    <div class="mb-3">
-                                        <label for="purok" class="form-label">Purok</label>
-                                        <input type="text" class="form-control" id="purok" value="5">
+
+                                    <div class="form-group form-float">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Province</label>
+                                        <div class="form-line">
+                                            <input type="text" class="form-control" name="province" value="<?php echo htmlspecialchars($province); ?>" required>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="barangay" class="form-label">Barangay</label>
-                                        <input type="text" class="form-control" id="barangay" value="San Isidro">
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Purok</label>
+                                        <div class="form-line">
+                                            <input type="text" class="form-control" name="purok" value="<?php echo htmlspecialchars($purok); ?>" required>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="municipality" class="form-label">Municipality</label>
-                                        <input type="text" class="form-control" id="municipality" value="Tarlac City">
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Barangay</label>
+                                        <div class="form-line">
+                                            <input type="text" class="form-control" name="barangay" value="<?php echo htmlspecialchars($barangay); ?>" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group form-float" style="margin-top: 10px !important;">
+                                        <label style="color: #212529; font-weight: 600;" class="form-label">Municipality</label>
+                                        <div class="form-line">
+                                            <input type="text" class="form-control" name="municipality" value="<?php echo htmlspecialchars($municipality); ?>" required>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Save Changes Button -->
-                            <div class="col-md-12 text-end">
+                            <div class="col-md-12 text-end mt-5">
                                 <button type="submit" class="btn btn-danger">Save Changes</button>
                             </div>
                         </form>
@@ -272,16 +256,48 @@ $is_logged_in = isset($_SESSION['user_id']);
 
     </div>
 
-    <!-- Footer -->
     <footer>
         <p>&copy; 2024 Crisis Management System - All Rights Reserved | <a href="#">Privacy Policy</a> | <a
                 href="#">Terms</a></p>
     </footer>
 
-    <!-- Bootstrap 5 JS and dependencies -->
+    <!-- JQUERY -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- SWEETALERT UPDATE PROFILE -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '<?php echo $_SESSION['success']; ?>'
+            }).then(() => {
+                window.location.href = 'profile.php';
+            });
+        </script>
+        <?php unset($_SESSION['success']); ?>
+    <?php elseif (isset($_SESSION['error'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<?php echo $_SESSION['error']; ?>'
+            }).then(() => {
+                window.location.href = 'profile.php';
+            });
+        </script>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <!-- BOOTSTRAP 5 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
+
+    <!-- JQUERY VALIDATION -->
+    <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="assets/js/pages/forms/form-validation.js"></script>
 
 </body>
 

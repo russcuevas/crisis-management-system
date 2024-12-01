@@ -49,6 +49,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $municipality = $_POST['municipality'];
     $confirm_password = $_POST['confirm'];
 
+    // Handle Profile Picture Upload
+    $profile_picture = null;
+    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+        // Specify the folder where the images will be uploaded
+        $target_dir = "assets/images/profile/";  // Set the target directory
+        $target_file = $target_dir . basename($_FILES["profile_picture"]["name"]);
+
+        // Check if the file is an image
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if (in_array($imageFileType, $allowed_types)) {
+            // Move the uploaded file to the target directory
+            if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $target_file)) {
+                // Extract only the file name (not the full path)
+                $profile_picture = basename($target_file); // Save only the filename (e.g., IMG_0884.jpg)
+            } else {
+                $_SESSION['error'] = 'Sorry, there was an error uploading your file.';
+                header('Location: register.php');
+                exit();
+            }
+        } else {
+            $_SESSION['error'] = 'Only image files (jpg, jpeg, png, gif) are allowed.';
+            header('Location: register.php');
+            exit();
+        }
+    }
+
     if ($password !== $confirm_password) {
         $_SESSION['error'] = 'Passwords do not match!';
         header('Location: register.php');
@@ -58,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $hashed_password = sha1($password);
     $verification_code = rand(100000, 999999);
 
+    // Check if email is already registered
     $stmt = $conn->prepare("SELECT * FROM tbl_users WHERE email = :email");
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
     $stmt->execute();
@@ -68,8 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    $query = "INSERT INTO tbl_users (email, password, fullname, contact, province, purok, barangay, municipality, code) 
-              VALUES (:email, :password, :fullname, :contact, :province, :purok, :barangay, :municipality, :code)";
+    // Insert user data into the database
+    $query = "INSERT INTO tbl_users (email, password, fullname, contact, province, purok, barangay, municipality, profile_picture, code) 
+              VALUES (:email, :password, :fullname, :contact, :province, :purok, :barangay, :municipality, :profile_picture, :code)";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':password', $hashed_password);
@@ -79,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':purok', $purok);
     $stmt->bindParam(':barangay', $barangay);
     $stmt->bindParam(':municipality', $municipality);
+    $stmt->bindParam(':profile_picture', $profile_picture);  // Store only the image filename
     $stmt->bindParam(':code', $verification_code);
 
     if ($stmt->execute()) {
@@ -140,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <div class="card">
             <div class="body">
-                <form id="sign_up" method="POST">
+                <form id="sign_up" method="POST" enctype="multipart/form-data">
                     <div class="msg"><span style="font-size: 30px;">Register</span></div>
 
                     <?php
@@ -170,9 +201,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                             </div>
 
-                            <div id="image_preview" style="display:none; margin-top: 10px;">
+                            <div id="image_preview" style="display:none;">
                                 <img id="preview_img" src="" alt="Selected Image"
-                                    style="margin-left: 30px; width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc; padding: 5px; background-color: #f9f9f9;">
+                                    style="margin-left: 40px; width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc; padding: 5px; background-color: #f9f9f9;">
                             </div>
 
                             <div class="input-group">
