@@ -1,3 +1,50 @@
+<?php
+session_start();
+include('database/connection.php');
+
+if (isset($_SESSION['user_id'])) {
+    header('Location: home.php');
+    exit();
+}
+
+if (isset($_POST['email']) && isset($_POST['password'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Query to get the user data based on the provided email
+    $query = "SELECT * FROM tbl_users WHERE email = :email";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Check if user exists
+    if ($stmt->rowCount() == 1) {
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Verify password
+        if (sha1($password) === $user['password']) {
+            // Check if the user is verified
+            if ($user['is_verified'] == 1) {
+                // Successful login
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['email'] = $user['email'];
+                $_SESSION['is_verified'] = $user['is_verified'];
+
+                // Redirect to home page
+                header('Location: home.php');
+                exit();
+            } else {
+                $_SESSION['error_message'] = "Your account is not verified!";
+            }
+        } else {
+            $_SESSION['error_message'] = "Invalid password!";
+        }
+    } else {
+        $_SESSION['error_message'] = "No user found with that email address!";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -45,6 +92,15 @@
             <div class="body">
                 <form id="sign_in" method="POST">
                     <div class="msg"><span style="font-size: 30px;">Login</span></div>
+
+                    <!-- Display Error Message -->
+                    <?php if (isset($_SESSION['error_message'])): ?>
+                        <div class="alert alert-danger">
+                            <?php echo $_SESSION['error_message']; ?>
+                            <?php unset($_SESSION['error_message']); ?>
+                        </div>
+                    <?php endif; ?>
+
                     <div class="input-group">
                         <span class="input-group-addon">
                             <i class="material-icons">email</i>
@@ -64,7 +120,7 @@
                     <button class="btn btn-block btn-lg bg-red waves-effect" type="submit">LOGIN</button>
 
                     <div class="m-t-25 m-b--5 align-center">
-                        <a href="register.php">If you dont have an account click here</a>
+                        <a href="register.php">If you don't have an account, click here</a>
                     </div>
                 </form>
             </div>

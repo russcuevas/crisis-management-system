@@ -1,3 +1,9 @@
+<?php
+session_start();
+include('database/connection.php');
+$is_logged_in = isset($_SESSION['user_id']);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -43,9 +49,12 @@
                             Reports
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
-                            <li><a class="dropdown-item" href="reports.php">Post Complain</a></li>
-                            <li><a class="dropdown-item" href="history.php">View History</a></li>
-
+                            <?php if ($is_logged_in): ?>
+                                <li><a class="dropdown-item" href="reports.php">Post Complain</a></li>
+                                <li><a class="dropdown-item" href="history.php">View History</a></li>
+                            <?php else: ?>
+                                <li><a class="dropdown-item" href="reports.php">Post Complain</a></li>
+                            <?php endif; ?>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -54,8 +63,13 @@
                             Profile
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                            <li><a class="dropdown-item" href="profile.php">Change Details</a></li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                            <?php if ($is_logged_in): ?>
+                                <li><a class="dropdown-item" href="profile.php">Change Details</a></li>
+                                <li><a class="dropdown-item" href="logout.php">Logout</a></li>
+                            <?php else: ?>
+                                <li><a class="dropdown-item" href="login.php">Login</a></li>
+                                <li><a class="dropdown-item" href="register.php">Register</a></li>
+                            <?php endif; ?>
                         </ul>
                     </li>
                 </ul>
@@ -65,7 +79,7 @@
 
     <!-- Main Content -->
     <div class="container main-content">
-        <h2>Home</h2>
+        <h2>Home / News Feed</h2>
 
         <!-- Post Cards -->
         <div class="row">
