@@ -8,6 +8,13 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $is_logged_in = isset($_SESSION['user_id']);
+$user_id = $_SESSION['user_id'];
+
+$query = "SELECT * FROM tbl_incidents WHERE user_id = :user_id";
+$stmt = $conn->prepare($query);
+$stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+$stmt->execute();
+$incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +76,6 @@ $is_logged_in = isset($_SESSION['user_id']);
             color: black !important;
         }
 
-
         .main-content {
             padding: 30px;
             flex: 1;
@@ -100,8 +106,8 @@ $is_logged_in = isset($_SESSION['user_id']);
 
         .table-container {
             background-color: #fff;
-            border: 1px solid #e0e0e0;
-            padding: 20px;
+            border: 1px solid black;
+            padding: 50px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
@@ -113,7 +119,6 @@ $is_logged_in = isset($_SESSION['user_id']);
         .nav-item .dropdown-item.active {
             background-color: #bc1823 !important;
             color: #fff !important;
-            /* Ensure text is readable on the red background */
         }
 
         .nav-item .dropdown-item:hover {
@@ -181,7 +186,6 @@ $is_logged_in = isset($_SESSION['user_id']);
 
         <!-- Report History Table -->
         <div class="table-container">
-            <!-- Add table-responsive class to make it scrollable on small screens -->
             <div class="table-responsive">
                 <table id="historyTable" class="table table-striped">
                     <thead>
@@ -189,35 +193,29 @@ $is_logged_in = isset($_SESSION['user_id']);
                             <th scope="col">#</th>
                             <th scope="col">Incident Type</th>
                             <th scope="col">Location</th>
+                            <th scope="col">Status</th>
                             <th scope="col">Date & Time</th>
                             <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Example Table Row 1 -->
-                        <tr>
-                            <th scope="row">1</th>
-                            <td>Fire</td>
-                            <td>Manila, Philippines</td>
-                            <td>2024-11-25 14:30</td>
-                            <td class="action-buttons">
-                                <a href="#" class="btn btn-info btn-sm">View</a>
-                                <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="#" class="btn btn-danger btn-sm">Delete</a>
-                            </td>
-                        </tr>
-                        <!-- Example Table Row 2 -->
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Flood</td>
-                            <td>Cebu, Philippines</td>
-                            <td>2024-11-20 09:00</td>
-                            <td class="action-buttons">
-                                <a href="#" class="btn btn-info btn-sm">View</a>
-                                <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="#" class="btn btn-danger btn-sm">Delete</a>
-                            </td>
-                        </tr>
+                        <?php if (count($incidents) > 0): ?>
+                            <?php $count = 1; ?>
+                            <?php foreach ($incidents as $incident): ?>
+                                <tr>
+                                    <th scope="row"><?php echo $count++; ?></th>
+                                    <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
+                                    <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
+                                    <td><?php echo htmlspecialchars($incident['status']); ?></td>
+                                    <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
+                                    <td class="action-buttons">
+                                        <a class="btn btn-warning btn-sm">View Information</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="5">No incidents found.</td></tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -226,8 +224,7 @@ $is_logged_in = isset($_SESSION['user_id']);
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 Crisis Management System - All Rights Reserved | <a href="#">Privacy Policy</a> | <a
-                href="#">Terms</a></p>
+        <p>&copy; 2024 Crisis Management System - All Rights Reserved | <a href="#">Privacy Policy</a> | <a href="#">Terms</a></p>
     </footer>
 
     <!-- Bootstrap 5 JS and dependencies -->

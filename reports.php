@@ -3,8 +3,85 @@ session_start();
 include('database/connection.php');
 
 $is_logged_in = isset($_SESSION['user_id']);
+$user_id = $_SESSION['user_id'] ?? null;
 
+
+// post report query
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $incidentType = $_POST['incident_type'] ?? '';
+    $otherIncident = $_POST['otherIncident'] ?? '';
+    $description = $_POST['incident_description'] ?? '';
+    $location = $_POST['incident_location'] ?? '';
+    $landmark = $_POST['incident_landmark'] ?? '';
+    $dateTime = $_POST['incident_datetime'] ?? '';
+    $mapLocation = $_POST['incident_location_map'] ?? '';
+
+    if ($incidentType === 'Others' && !empty($otherIncident)) {
+        $incidentType = $otherIncident;
+    }
+
+    $incidentProof = [];
+    if (isset($_FILES['incident_proof']) && !empty($_FILES['incident_proof']['name'][0])) {
+        $uploadedFiles = $_FILES['incident_proof'];
+        $maxFiles = 3;
+        $fileNames = [];
+
+        for ($i = 0; $i < min(count($uploadedFiles['name']), $maxFiles); $i++) {
+            $fileTmpPath = $uploadedFiles['tmp_name'][$i];
+            $fileName = $uploadedFiles['name'][$i];
+            $fileSize = $uploadedFiles['size'][$i];
+            $fileType = $uploadedFiles['type'][$i];
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+
+            if (in_array($fileType, $allowedTypes)) {
+                $uniqueFileName = time() . '_' . $fileName;
+                $uploadDirectory = 'assets/images/proofs/';
+                $filePath = $uploadDirectory . basename($uniqueFileName);
+                if (move_uploaded_file($fileTmpPath, $filePath)) {
+                    $fileNames[] = $uniqueFileName;
+                }
+            }
+        }
+
+        if (!empty($fileNames)) {
+            $incidentProof = json_encode($fileNames);
+        }
+    }
+
+    $query = "INSERT INTO tbl_incidents 
+              (user_id, incident_type, incident_description, incident_proof, incident_location, 
+               incident_landmark, incident_datetime, incident_location_map, status, created_at, updated_at) 
+              VALUES 
+              (:user_id, :incident_type, :incident_description, :incident_proof, :incident_location, 
+               :incident_landmark, :incident_datetime, :incident_location_map, :status, NOW(), NOW())";
+
+    $stmt = $conn->prepare($query);
+    $status = 'Pending';
+    $stmt->bindParam(':user_id', $user_id);
+    $stmt->bindParam(':incident_type', $incidentType);
+    $stmt->bindParam(':incident_description', $description);
+    $stmt->bindParam(':incident_proof', $incidentProof);
+    $stmt->bindParam(':incident_location', $location);
+    $stmt->bindParam(':incident_landmark', $landmark);
+    $stmt->bindParam(':incident_datetime', $dateTime);
+    $stmt->bindParam(':incident_location_map', $mapLocation);
+    $stmt->bindParam(':status', $status);
+
+    if ($stmt->execute()) {
+        $_SESSION['success'] = 'Reports successfully posted please wait for the approval of the admin';
+        header('Location: reports.php');
+        exit();
+    } else {
+        $_SESSION['error'] = 'Reports failed to post';
+        header('Location: reports.php');
+        exit();
+    }
+}
 ?>
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +99,48 @@ $is_logged_in = isset($_SESSION['user_id']);
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="assets/css/home.css">
+    <style>
+        /* validation */
+        #incident_description-error {
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #incident_proof-error {
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #incident_location-error {
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #incident_datetime-error {
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #mapLocation-error{
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+
+        .form-group .form-line.error {
+            border: 2px solid red !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -93,58 +212,81 @@ $is_logged_in = isset($_SESSION['user_id']);
             <!-- Form Section (Responsive Column) -->
             <div class="col-lg-8 col-md-12 form-container">
                 <div class="report-form">
-                    <form action="#" method="POST" enctype="multipart/form-data">
-                        <!-- Incident Type Dropdown -->
-                        <div class="mb-3">
-                            <label for="incidentType" class="form-label">Type of Incident</label>
-                            <select class="form-select" id="incidentType" name="incidentType" required>
-                                <option value="Fire">Fire</option>
-                                <option value="Flood">Flood</option>
-                                <option value="Earthquake">Earthquake</option>
-                                <option value="Accident">Accident</option>
-                                <option value="Theft">Theft</option>
-                                <option value="Others">Others (Specify)</option>
-                            </select>
+                    <form id="form_advanced_validation" action="#" method="POST" enctype="multipart/form-data">
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
+                        <?php endif; ?>
+                            <div class="form-group form-float">
+                            <label for="incident_type" style="color: #212529; font-weight: 600;">Type of Incident</label>
+                            <div class="form-line">
+                                <select class="form-select" id="incident_type" name="incident_type" required>
+                                    <option value="Fire">Fire</option>
+                                    <option value="Flood">Flood</option>
+                                    <option value="Earthquake">Earthquake</option>
+                                    <option value="Accident">Accident</option>
+                                    <option value="Theft">Theft</option>
+                                    <option value="Others">Others (Specify)</option>
+                                </select>                          
+                            </div>
                         </div>
 
-                        <!-- Other Incident Type Input -->
-                        <div class="mb-3" id="otherIncidentInput" style="display: none;">
-                            <label for="otherIncident" class="form-label">Please Specify the Incident</label>
-                            <input type="text" class="form-control" id="otherIncident" name="otherIncident">
+                        <div class="form-group form-float" id="otherIncidentInput" style="display: none;">
+                            <label for="otherIncident" style="color: #212529; font-weight: 600;" class="form-label">Please Specify the Incident</label>
+                            <div class="form-line">
+                                <input type="text" id="otherIncident" class="form-control" name="otherIncident">
+                            </div>
                         </div>
 
-                        <!-- File Upload (Image or Document) -->
-                        <div class="mb-3">
-                            <label for="fileUpload" class="form-label">Upload Supporting File</label>
-                            <input class="form-control" type="file" id="fileUpload" name="fileUpload">
+                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label for="incident_description" style="color: #212529; font-weight: 600;" class="form-label">Description</label>
+                            <div class="form-line">
+                            <textarea name="incident_description" cols="30" rows="5" class="form-control no-resize" required="" aria-required="true" aria-invalid="true"></textarea>
+                            </div>
                         </div>
 
-                        <!-- Location with Landmark -->
-                        <div class="mb-3">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" class="form-control" id="location" name="location" required>
+                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Upload Supporting Picture</label>
+                            <div class="form-line">
+                                <input class="form-control" type="file" id="incident_proof" name="incident_proof[]" multiple required>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="landmark" class="form-label">Landmark (Optional)</label>
-                            <input type="text" class="form-control" id="landmark" name="landmark">
+
+                        <div id="filePreview" class="row mb-3 mt-3" style="display: none;">
+                            <label class="form-label">Selected Files:</label>
                         </div>
 
-                        <!-- Date and Time -->
-                        <div class="mb-3">
-                            <label for="dateTime" class="form-label">Date and Time</label>
-                            <input type="datetime-local" class="form-control" id="dateTime" name="dateTime" required>
+                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Location</label>
+                            <div class="form-line">
+                                <input type="text" class="form-control" id="incident_location" name="incident_location" required>
+                            </div>
                         </div>
 
-                        <!-- Map Location (Pin Location) -->
-                        <div class="mb-3">
-                            <label for="mapLocation" class="form-label">Location on Map</label>
-                            <input type="text" class="form-control" id="mapLocation" name="mapLocation"
-                                placeholder="Pin the location" readonly>
+                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Landmark (Optional)</label>
+                            <div class="form-line">
+                            <input type="text" class="form-control" id="incident_landmark" name="incident_landmark">
+                            </div>
+                        </div>
+
+                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Date and Time</label>
+                            <div class="form-line">
+                            <input type="datetime-local" class="form-control" id="incident_datetime" name="incident_datetime" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Location on Map <span style="color: red;">(USE MAP TO PIN)</span></label>
+                            <div class="form-line">
+                            <input style="background-color: lightgrey;" type="text" class="form-control" id="mapLocation" name="incident_location_map"
+                                placeholder="Pin the location" readonly required>
+                            </div>
                         </div>
 
                         <!-- Post Button -->
-                        <div class="text-end">
+                        <div class="text-end mt-5">
                             <button type="submit" class="btn btn-primary">Post Report</button>
                         </div>
                     </form>
@@ -167,6 +309,10 @@ $is_logged_in = isset($_SESSION['user_id']);
                 href="#">Terms</a></p>
     </footer>
 
+    <!-- JQUERY -->
+    <script src="assets/plugins/jquery/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Bootstrap 5 JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -176,9 +322,37 @@ $is_logged_in = isset($_SESSION['user_id']);
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.1.0/screenfull.min.js"></script>
 
+    <!-- JQUERY VALIDATION -->
+    <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
+    <script src="assets/js/pages/forms/form-validation.js"></script>
 
+    <!-- SWEETALERT UPDATE PROFILE -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '<?php echo $_SESSION['success']; ?>'
+            }).then(() => {
+                window.location.href = 'reports.php';
+            });
+        </script>
+        <?php unset($_SESSION['success']); ?>
+    <?php elseif (isset($_SESSION['error'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<?php echo $_SESSION['error']; ?>'
+            }).then(() => {
+                window.location.href = 'reports.php';
+            });
+        </script>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <!-- MAP AND DATE TIME -->
     <script>
-        // Initialize the map
         var map = L.map('map').setView([13.41, 122.56], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -189,10 +363,7 @@ $is_logged_in = isset($_SESSION['user_id']);
             [21.4, 126.6]
         ]);
 
-        // Create a marker
         var marker = L.marker([13.41, 122.56]).addTo(map);
-
-        // Map click event to update marker position and location name
         map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
@@ -213,10 +384,8 @@ $is_logged_in = isset($_SESSION['user_id']);
                 });
         });
 
-        // Enable marker dragging
         marker.dragging.enable();
 
-        // Date and time update function
         function updateDateTime() {
             const options = {
                 weekday: 'long',
@@ -235,13 +404,58 @@ $is_logged_in = isset($_SESSION['user_id']);
 
         setInterval(updateDateTime, 1000);
 
-        // Fullscreen toggle functionality
         const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-        // When the fullscreen button is clicked
         fullscreenBtn.addEventListener('click', function() {
             if (screenfull.isEnabled) {
-                screenfull.toggle(document.getElementById('map')); // Toggle fullscreen for the map div
+                screenfull.toggle(document.getElementById('map'));
+            }
+        });
+    </script>
+
+    <!-- DISPLAYING IMAGE -->
+    <script>
+        document.getElementById('incident_proof').addEventListener('change', function(event) {
+            const fileInput = event.target;
+            const filePreview = document.getElementById('filePreview');
+            filePreview.innerHTML = '';
+
+            if (fileInput.files.length > 0) {
+                filePreview.style.display = 'block';
+                Array.from(fileInput.files).forEach(file => {
+                    const fileType = file.type.split('/')[0];
+
+                    const fileWrapper = document.createElement('div');
+                    fileWrapper.classList.add('col-6', 'col-sm-4', 'mb-2');
+
+                    if (fileType === 'image') {
+                        const img = document.createElement('img');
+                        img.classList.add('img-fluid', 'rounded');
+                        img.style.maxHeight = '100px';
+                        img.src = URL.createObjectURL(file);
+                        fileWrapper.appendChild(img);
+                    } else {
+                        const icon = document.createElement('i');
+                        icon.classList.add('fas', 'fa-file-alt', 'fa-3x');
+                        fileWrapper.appendChild(icon);
+                    }
+
+                    filePreview.appendChild(fileWrapper);
+                });
+            }
+        });
+    </script>
+
+    <!-- OTHERS SPECIFY -->
+    <script>
+        document.getElementById('incident_type').addEventListener('change', function() {
+            var otherIncidentInput = document.getElementById('otherIncidentInput');
+            var incidentType = this.value;
+
+            if (incidentType === 'Others') {
+                otherIncidentInput.style.display = 'block';
+            } else {
+                otherIncidentInput.style.display = 'none';
             }
         });
     </script>
