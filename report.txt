@@ -32,18 +32,46 @@ updated_at
 
 tbl_incedents
 user_id->foreign to tbl_users
-incident_type
-incident_proof
+incident_type -> Fire, Flood, Earthquake, Accident, Theft, Others(Specify)
+incident_description
+incident_proof -> How can i make maximum of 3 image will be inserted
+incident_location
+incident_landmark
+incident_datetime -> will set by the user
+incident_location_map
+status -> pending, approve, cancelled
+created_at -> now
+updated_at -> now
+
+tbl_incedents_cancelled
+user_id->foreign to tbl_users
+incident_type -> Fire, Flood, Earthquake, Accident, Theft, Others(Specify)
+incident_description
+incident_proof -> How can i make maximum of 3 image will be inserted
+incident_location
+incident_landmark
+incident_datetime -> will set by the user
+incident_location_map
+status -> pending, approve, cancelled
+created_at -> now
+updated_at -> now
+
+tbl_reports
+user_id->foreign to tbl_users
+incident_type ->
+incident_description
+incident_proof ->
 incident_location
 incident_landmark
 incident_datetime
 incident_location_map
-status -> pending, approve, cancelled
-created_at
-updated_at
+status -> Approve
+created_at -> now
+updated_at -> now
 
 tbl_feedback
 email
+questions
 feedback
 created_at
 updated_at
