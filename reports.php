@@ -6,8 +6,9 @@ $is_logged_in = isset($_SESSION['user_id']);
 $user_id = $_SESSION['user_id'] ?? null;
 
 
-// post report query
+// Post report query
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Other fields (existing code)
     $incidentType = $_POST['incident_type'] ?? '';
     $otherIncident = $_POST['otherIncident'] ?? '';
     $description = $_POST['incident_description'] ?? '';
@@ -15,11 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $landmark = $_POST['incident_landmark'] ?? '';
     $dateTime = $_POST['incident_datetime'] ?? '';
     $mapLocation = $_POST['incident_location_map'] ?? '';
+    
+    // Get the latitude and longitude from the form
+    $latitude = $_POST['incident_latitude'] ?? null;
+    $longitude = $_POST['incident_longitude'] ?? null;
 
     if ($incidentType === 'Others' && !empty($otherIncident)) {
         $incidentType = $otherIncident;
     }
 
+    // Handle file uploads (existing code)
     $incidentProof = [];
     if (isset($_FILES['incident_proof']) && !empty($_FILES['incident_proof']['name'][0])) {
         $uploadedFiles = $_FILES['incident_proof'];
@@ -48,12 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
+    // Update SQL query to insert latitude and longitude
     $query = "INSERT INTO tbl_incidents 
               (user_id, incident_type, incident_description, incident_proof, incident_location, 
-               incident_landmark, incident_datetime, incident_location_map, status, created_at, updated_at) 
+               incident_landmark, incident_datetime, incident_location_map, latitude, longitude, status, created_at, updated_at) 
               VALUES 
               (:user_id, :incident_type, :incident_description, :incident_proof, :incident_location, 
-               :incident_landmark, :incident_datetime, :incident_location_map, :status, NOW(), NOW())";
+               :incident_landmark, :incident_datetime, :incident_location_map, :latitude, :longitude, :status, NOW(), NOW())";
 
     $stmt = $conn->prepare($query);
     $status = 'Pending';
@@ -65,10 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':incident_landmark', $landmark);
     $stmt->bindParam(':incident_datetime', $dateTime);
     $stmt->bindParam(':incident_location_map', $mapLocation);
+    $stmt->bindParam(':latitude', $latitude);
+    $stmt->bindParam(':longitude', $longitude);
     $stmt->bindParam(':status', $status);
 
     if ($stmt->execute()) {
-        $_SESSION['success'] = 'Reports successfully posted please wait for the approval of the admin';
+        $_SESSION['success'] = 'Reports successfully posted. Please wait for the approval of the admin';
         header('Location: reports.php');
         exit();
     } else {
@@ -77,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 }
+
 ?>
 
 
@@ -276,12 +286,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="datetime-local" class="form-control" id="incident_datetime" name="incident_datetime" required>
                             </div>
                         </div>
-
+                        <input type="hidden" id="incident_latitude" name="incident_latitude" value="">
+                        <input type="hidden" id="incident_longitude" name="incident_longitude" value="">
                         <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Location on Map <span style="color: red;">(USE MAP TO PIN)</span></label>
                             <div class="form-line">
-                            <input style="background-color: lightgrey;" type="text" class="form-control" id="mapLocation" name="incident_location_map"
-                                placeholder="Pin the location" readonly required>
+                                <input style="background-color: lightgrey;" type="text" class="form-control" id="mapLocation" name="incident_location_map" placeholder="Pin the location" readonly required>
                             </div>
                         </div>
 
@@ -326,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="assets/js/pages/forms/form-validation.js"></script>
 
-    <!-- SWEETALERT UPDATE PROFILE -->
+    <!-- SWEETALERT POST REPORTS -->
     <?php if (isset($_SESSION['success'])): ?>
         <script>
             Swal.fire({
@@ -353,38 +363,74 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- MAP AND DATE TIME -->
     <script>
-        var map = L.map('map').setView([13.41, 122.56], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+var map = L.map('map').setView([13.41, 122.56], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
 
-        map.setMaxBounds([
-            [4.6, 116.9],
-            [21.4, 126.6]
-        ]);
+map.setMaxBounds([
+    [4.6, 116.9],
+    [21.4, 126.6]
+]);
 
-        var marker = L.marker([13.41, 122.56]).addTo(map);
-        map.on('click', function(e) {
-            var lat = e.latlng.lat;
-            var lng = e.latlng.lng;
+var marker = L.marker([13.41, 122.56], {
+    draggable: true
+}).addTo(map);
 
-            marker.setLatLng([lat, lng]);
+// Capture latitude and longitude when the map is clicked
+map.on('click', function (e) {
+    var lat = e.latlng.lat;
+    var lon = e.latlng.lng;
 
-            var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+    // Set the marker at the clicked location
+    marker.setLatLng([lat, lon]);
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    var placeName = data.display_name || "Location not found";
-                    document.getElementById('mapLocation').value = placeName;
-                })
-                .catch(error => {
-                    console.error("Error fetching place name:", error);
-                    document.getElementById('mapLocation').value = "Location not found";
-                });
+    // Populate hidden input fields with latitude and longitude
+    document.getElementById('incident_latitude').value = lat;
+    document.getElementById('incident_longitude').value = lon;
+
+    // Optionally, use reverse geocoding to get the place name
+    var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            var placeName = data.display_name || "Location not found";
+            document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+        })
+        .catch(error => {
+            console.error("Error fetching place name:", error);
+            document.getElementById('mapLocation').value = "Location not found";
         });
+});
 
-        marker.dragging.enable();
+// Enable dragging of the marker
+marker.dragging.enable();
+
+// Add a listener for marker drag end to update location
+marker.on('dragend', function (e) {
+    var lat = e.target.getLatLng().lat;
+    var lon = e.target.getLatLng().lng;
+
+    // Update input fields with latitude and longitude
+    document.getElementById('incident_latitude').value = lat;
+    document.getElementById('incident_longitude').value = lon;
+
+    // Use reverse geocoding to get the place name
+    var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            var placeName = data.display_name || "Location not found";
+            document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+        })
+        .catch(error => {
+            console.error("Error fetching place name:", error);
+            document.getElementById('mapLocation').value = "Location not found";
+        });
+});
+
 
         function updateDateTime() {
             const options = {

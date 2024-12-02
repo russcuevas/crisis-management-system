@@ -199,23 +199,19 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (count($incidents) > 0): ?>
-                            <?php $count = 1; ?>
-                            <?php foreach ($incidents as $incident): ?>
-                                <tr>
-                                    <th scope="row"><?php echo $count++; ?></th>
-                                    <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
-                                    <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
-                                    <td><?php echo htmlspecialchars($incident['status']); ?></td>
-                                    <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
-                                    <td class="action-buttons">
-                                        <a class="btn btn-warning btn-sm">View Information</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr><td colspan="5">No incidents found.</td></tr>
-                        <?php endif; ?>
+                        <?php $count = 1; ?>
+                        <?php foreach ($incidents as $incident): ?>
+                            <tr>
+                                <th scope="row"><?php echo $count++; ?></th>
+                                <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
+                                <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
+                                <td><?php echo htmlspecialchars($incident['status']); ?></td>
+                                <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
+                                <td class="action-buttons">
+                                    <a href="view_history.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-warning btn-sm">View Information</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
@@ -227,6 +223,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <p>&copy; 2024 Crisis Management System - All Rights Reserved | <a href="#">Privacy Policy</a> | <a href="#">Terms</a></p>
     </footer>
 
+
     <!-- Bootstrap 5 JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
@@ -234,16 +231,41 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- jQuery (required by DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
 
+    <!-- SWEETALERT UPDATE PROFILE -->
+        <?php if (isset($_SESSION['success'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '<?php echo $_SESSION['success']; ?>'
+            }).then(() => {
+                window.location.href = 'history.php';
+            });
+        </script>
+        <?php unset($_SESSION['success']); ?>
+    <?php elseif (isset($_SESSION['error'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<?php echo $_SESSION['error']; ?>'
+            }).then(() => {
+                window.location.href = 'history.php';
+            });
+        </script>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
     <script>
-        // Initialize DataTable with responsive support
         $(document).ready(function() {
             $('#historyTable').DataTable({
-                responsive: true // Enable responsiveness
+                responsive: true 
             });
         });
     </script>

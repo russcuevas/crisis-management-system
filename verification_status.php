@@ -10,7 +10,6 @@ session_start();
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <title>Account Verification Status</title>
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-    <!-- Bootstrap Core Css -->
     <link href="assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
