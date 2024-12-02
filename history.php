@@ -204,7 +204,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <tr>
                                 <th scope="row"><?php echo $count++; ?></th>
                                 <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
-                                <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
+                                <td><?php echo htmlspecialchars($incident['incident_location_map']); ?></td>
                                 <td><?php echo htmlspecialchars($incident['status']); ?></td>
                                 <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
                                 <td class="action-buttons">

@@ -55,7 +55,6 @@ if ($incident_id) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
     <style>
-        /* Custom Styles */
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f5f5f5;
@@ -212,12 +211,8 @@ if ($incident_id) {
         <h3>Incident History</h3>
         <h6><?php echo $incident['incident_location_map'] ?></h6>
 
-        <!-- Incident Map -->
         <div id="map"></div>
 
-        <!-- Swiper Carousel for Proof Images -->
-
-        <!-- Incident Details Section -->
         <div class="card p-4 mt-5">
             <div class="swiper-container">
                 <h3>Proofs</h3>
@@ -249,13 +244,17 @@ if ($incident_id) {
                 <p><strong>Date Posted:</strong> <?php echo $incident['created_at']; ?></p>
             </div>
             <div class="col-md-12 text-end mt-5">
-                <a href="#"
-                    class="btn btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteModal"
-                    onclick="setIncidentId(<?php echo $incident['incident_id']; ?>)">
-                    DELETE REQUEST
-                </a>
+                <?php if ($incident['status'] === 'Approved'): ?>
+
+                <?php else: ?>
+                    <a href="#"
+                        class="btn btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal"
+                        onclick="setIncidentId(<?php echo $incident['incident_id']; ?>)">
+                        DELETE REQUEST
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -289,6 +288,7 @@ if ($incident_id) {
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
+    <!-- SWIPER AND MAPw -->
     <script>
         const swiper = new Swiper('.swiper-container', {
             loop: true,
