@@ -139,64 +139,67 @@ function timeAgo($timestamp)
     <!-- Main Content -->
     <div class="container main-content">
         <h2>Home / News Feed</h2>
-
-        <!-- Post Cards -->
-        <div class="row">
-            <?php foreach ($incidents as $incident): ?>
-                <div class="col-12 col-md-6 col-lg-4 mb-4">
-                    <div class="card news-feed">
-
-                        <?php if ($is_logged_in && $incident['user_id'] == $user_id): ?>
-                            <div class="badge badge-primary" style="position: absolute; top: 10px; right: 10px; z-index: 10; background-color: #007bff; color: white; padding: 5px 10px; font-size: 14px;">
-                                My Post
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="card-header">
-                            <i class="fa-solid fa-user"></i> <?php echo htmlspecialchars($incident['fullname']); ?>
-                        </div>
-
-                        <div class="card-body">
-                            <h5>TYPE OF INCIDENT - <strong><?php echo htmlspecialchars($incident['incident_type']); ?></strong></h5>
-                            <div class="swiper-container">
-                                <div class="swiper-wrapper">
-                                    <?php
-                                    $proofs = json_decode($incident['incident_proof'], true);
-                                    if ($proofs && is_array($proofs)) {
-                                        foreach ($proofs as $proof) {
-                                            $proof_image_path = 'assets/images/proofs/' . $proof;
-                                            echo '<div class="swiper-slide"><img src="' . $proof_image_path . '" alt="Proof Image" /></div>';
-                                        }
-                                    } else {
-                                        echo "<div class='swiper-slide'><p>No proofs available.</p></div>";
-                                    }
-                                    ?>
-                                </div>
-                            </div>
-
-                            <p style="margin-top: 20px !important;"><strong>Location - </strong> <?php echo htmlspecialchars($incident['incident_location_map']); ?></p>
-                            <p><strong>Landmark - </strong> <?php echo htmlspecialchars($incident['incident_landmark']); ?></p>
-                            <p><strong>Date and Time - </strong> <?php echo htmlspecialchars($incident['incident_datetime']); ?></p>
-
-                            <a href="view_full_information.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-primary">VIEW FULL INFORMATION</a>
-                        </div>
-
-                        <div class="card-footer">
-                            <span>Posted: </span>
-                            <span><?php echo date('m/d/Y', strtotime($incident['created_at'])); ?> </span><br>
-                            <span class="time-ago" data-time="<?php echo $incident['created_at']; ?>">
-                                <?php echo timeAgo($incident['created_at']); ?>
-                            </span>
-                        </div>
-
-                    </div>
+        <?php if (empty($incidents)): ?>
+            <div class="no-posts-container">
+                <div class="no-posts-box">
+                    No post incidents available.
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
 
-        <div class="text-center mt-4">
-            <a href="#" class="btn btn-primary">View More Posts</a>
-        </div>
+        <?php else: ?>
+            <div class="row">
+                <?php foreach ($incidents as $incident): ?>
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="card news-feed">
+
+                            <?php if ($is_logged_in && $incident['user_id'] == $user_id): ?>
+                                <div class="badge badge-primary" style="position: absolute; top: 10px; right: 10px; z-index: 10; background-color: #007bff; color: white; padding: 5px 10px; font-size: 14px;">
+                                    My Post
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="card-header">
+                                <i class="fa-solid fa-user"></i> <?php echo htmlspecialchars($incident['fullname']); ?>
+                            </div>
+
+                            <div class="card-body">
+                                <h5>TYPE OF INCIDENT - <strong><?php echo htmlspecialchars($incident['incident_type']); ?></strong></h5>
+                                <div class="swiper-container">
+                                    <div class="swiper-wrapper">
+                                        <?php
+                                        $proofs = json_decode($incident['incident_proof'], true);
+                                        if ($proofs && is_array($proofs)) {
+                                            foreach ($proofs as $proof) {
+                                                $proof_image_path = 'assets/images/proofs/' . $proof;
+                                                echo '<div class="swiper-slide"><img src="' . $proof_image_path . '" alt="Proof Image" /></div>';
+                                            }
+                                        } else {
+                                            echo "<div class='swiper-slide'><p>No proofs available.</p></div>";
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+
+                                <p style="margin-top: 20px !important;"><strong>Location - </strong> <?php echo htmlspecialchars($incident['incident_location_map']); ?></p>
+                                <p><strong>Landmark - </strong> <?php echo htmlspecialchars($incident['incident_landmark']); ?></p>
+                                <p><strong>Date and Time - </strong> <?php echo htmlspecialchars($incident['incident_datetime']); ?></p>
+
+                                <a href="view_full_information.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-primary">VIEW FULL INFORMATION</a>
+                            </div>
+
+                            <div class="card-footer">
+                                <span>Posted: </span>
+                                <span><?php echo date('m/d/Y', strtotime($incident['created_at'])); ?> </span><br>
+                                <span class="time-ago" data-time="<?php echo $incident['created_at']; ?>">
+                                    <?php echo timeAgo($incident['created_at']); ?>
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <!-- Footer -->

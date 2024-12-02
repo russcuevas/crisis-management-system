@@ -30,7 +30,25 @@ body {
 }
 
 .nav-link.active {
+    font-weight: 900;
     color: black !important;
+}
+
+.no-posts-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.no-posts-box {
+    border: 2px solid #ccc;
+    padding: 30px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: whitesmoke;
+    border-radius: 8px;
 }
 
 .main-content {
