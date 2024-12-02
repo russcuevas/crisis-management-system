@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2024 at 06:19 AM
--- Server version: 10.4.27-MariaDB
--- PHP Version: 8.2.0
+-- Generation Time: Dec 02, 2024 at 02:09 PM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -51,18 +51,43 @@ INSERT INTO `tbl_admin` (`id`, `email`, `password`, `created_at`, `updated_at`) 
 CREATE TABLE `tbl_feedback` (
   `id` int(11) NOT NULL,
   `fullname` varchar(255) DEFAULT NULL,
+  `question` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
   `feedback` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `tbl_feedback`
+-- Table structure for table `tbl_incidents`
 --
 
-INSERT INTO `tbl_feedback` (`id`, `fullname`, `email`, `feedback`, `created_at`, `updated_at`) VALUES
-(12, 'ad', 'russelcuevas0', 'asd', '2024-12-01 19:56:34', '2024-12-01 19:56:34');
+CREATE TABLE `tbl_incidents` (
+  `incident_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `incident_type` varchar(255) NOT NULL,
+  `incident_description` text DEFAULT NULL,
+  `incident_proof` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`incident_proof`)),
+  `incident_location` varchar(255) DEFAULT NULL,
+  `incident_landmark` varchar(255) DEFAULT NULL,
+  `incident_datetime` datetime NOT NULL,
+  `incident_location_map` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_incidents`
+--
+
+INSERT INTO `tbl_incidents` (`incident_id`, `user_id`, `incident_type`, `incident_description`, `incident_proof`, `incident_location`, `incident_landmark`, `incident_datetime`, `incident_location_map`, `status`, `created_at`, `updated_at`, `latitude`, `longitude`) VALUES
+(16, 12, 'Fire', 'Hello', '[\"1733131645_Screenshot (12).png\",\"1733131645_Screenshot (13).png\"]', 'Hello', 'Hello', '2024-12-02 19:27:00', 'Roxas, Capiz, Western Visayas, Philippines', 'Approved', '2024-12-02 09:27:25', '2024-12-02 09:30:51', 11.512322409887755, 122.73057698684987),
+(17, 12, 'Flood', 'Hello', '[\"1733131797_Screenshot (10).png\",\"1733131797_Screenshot (11).png\"]', 'Hello', 'Hello', '2024-12-11 17:29:00', 'Malubog-Bagacay-Biga Road, Bagakay, Cebu, Central Visayas, Philippines', 'Pending', '2024-12-02 09:29:57', '2024-12-02 09:29:57', 10.358151400943683, 123.73088525716874);
 
 -- --------------------------------------------------------
 
@@ -112,6 +137,13 @@ ALTER TABLE `tbl_feedback`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `tbl_incidents`
+--
+ALTER TABLE `tbl_incidents`
+  ADD PRIMARY KEY (`incident_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
@@ -132,13 +164,29 @@ ALTER TABLE `tbl_admin`
 -- AUTO_INCREMENT for table `tbl_feedback`
 --
 ALTER TABLE `tbl_feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
+-- AUTO_INCREMENT for table `tbl_incidents`
+--
+ALTER TABLE `tbl_incidents`
+  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `tbl_incidents`
+--
+ALTER TABLE `tbl_incidents`
+  ADD CONSTRAINT `tbl_incidents_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
