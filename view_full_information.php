@@ -2,21 +2,15 @@
 session_start();
 include('database/connection.php');
 
-$is_logged_in = isset($_SESSION['user_id']);
-$user_id = $_SESSION['user_id'] ?? null;
-
-if (!$is_logged_in) {
-    header('Location: login.php');
-    exit();
-}
-
 $incident_id = $_GET['id'] ?? null;
-
 if ($incident_id) {
-    $query = "SELECT * FROM tbl_incidents WHERE incident_id = :incident_id AND user_id = :user_id";
+    $query = "SELECT i.*, u.fullname FROM tbl_incidents i
+              LEFT JOIN tbl_users u ON i.user_id = u.id
+              WHERE i.incident_id = :incident_id";
+
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
-    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+
     $stmt->execute();
     $incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -29,6 +23,8 @@ if ($incident_id) {
     exit();
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +45,11 @@ if ($incident_id) {
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet" />
+
+    <!-- Mapbox JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
 
     <style>
         body {
@@ -167,19 +168,19 @@ if ($incident_id) {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="home.php">Home</a>
+                        <a class="nav-link active" href="home.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="about.php">About Us</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link active dropdown-toggle" href="#" id="reportsDropdown" role="button"
+                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Reports
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
                             <li><a class="dropdown-item" href="reports.php">Post Complain</a></li>
-                            <li><a class="dropdown-item active" href="history.php">View History</a></li>
+                            <li><a class="dropdown-item" href="history.php">View History</a></li>
 
                         </ul>
                     </li>
@@ -206,7 +207,7 @@ if ($incident_id) {
     <div class="container">
         <h3 style="color: whitesmoke;">Incident History</h3>
         <h6 style="color: whitesmoke;"><?php echo $incident['incident_location_map'] ?></h6>
-
+        <h6 style="color: whitesmoke">Posted by: <?php echo htmlspecialchars($incident['fullname']); ?></h6>
         <div id="map"></div>
 
         <div class="card p-4 mt-5">
@@ -234,27 +235,9 @@ if ($incident_id) {
                 <p><strong>Date & Time:</strong> <?php echo $incident['incident_datetime']; ?></p>
                 <p><strong>Status:</strong> <span style="color: green;"><?php echo $incident['status']; ?></span></p>
                 <p><strong>Date Posted:</strong> <?php echo $incident['created_at']; ?></p>
+                <p><strong>Date Approved:</strong> <?php echo $incident['updated_at']; ?></p>
             </div>
-            <div class="col-md-12 text-end mt-5">
-                <?php if ($incident['status'] === 'Approved'): ?>
 
-                <?php else: ?>
-                    <a href="#"
-                        class="btn btn-warning"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal"
-                        onclick="setIncidentId(<?php echo $incident['incident_id']; ?>)">
-                        EDIT REQUEST
-                    </a>
-                    <a href="#"
-                        class="btn btn-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal"
-                        onclick="setIncidentId(<?php echo $incident['incident_id']; ?>)">
-                        DELETE REQUEST
-                    </a>
-                <?php endif; ?>
-            </div>
         </div>
     </div>
 
@@ -287,7 +270,7 @@ if ($incident_id) {
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-    <!-- SWIPER AND MAPw -->
+    <!-- SWIPER AND MAP -->
     <script>
         const swiper = new Swiper('.swiper-container', {
             loop: true,
@@ -307,6 +290,8 @@ if ($incident_id) {
             },
         });
 
+        // MAP API REAL TIME LOCATION
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaHR0cHJ1c3MiLCJhIjoiY200NGtidzU0MGw1MTJscXhoazc0dDFyMiJ9.fmNrzF3Oa_TcSlcfF8nfCw';
         var map = L.map('map').setView([13.41, 122.56], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -319,25 +304,70 @@ if ($incident_id) {
 
         var latitude = <?php echo json_encode($incident['latitude']); ?>;
         var longitude = <?php echo json_encode($incident['longitude']); ?>;
+        var userLatitude, userLongitude;
+        var userMarker, incidentMarker;
+        incidentMarker = L.marker([latitude, longitude]).addTo(map)
+            .bindPopup('<b><?php echo $incident['incident_type']; ?></b><br>' +
+                'Location: <?php echo $incident['incident_location_map']; ?><br>');
 
-        if (latitude && longitude) {
-            var marker = L.marker([latitude, longitude]).addTo(map)
-                .bindPopup('<b><?php echo $incident['incident_type']; ?></b><br>' +
-                    'Location: <?php echo $incident['incident_location']; ?><br>' +
-                    'Status: <?php echo $incident['status']; ?>');
-            map.setView([latitude, longitude], 18);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                userLatitude = position.coords.latitude;
+                userLongitude = position.coords.longitude;
+                if (!userMarker) {
+                    userMarker = L.marker([userLatitude, userLongitude]).addTo(map)
+                        .bindPopup('Your Location')
+                        .openPopup();
+                } else {
+                    userMarker.setLatLng([userLatitude, userLongitude]);
+                }
+                map.setView([userLatitude, userLongitude], 14);
+                getDirections();
+            }, function() {
+                console.log("User denied geolocation access. Showing incident location only.");
+                map.setView([latitude, longitude], 18);
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
         } else {
-            console.error("Latitude or Longitude data is missing");
+            console.log("Geolocation is not supported by this browser. Showing incident location only.");
+            map.setView([latitude, longitude], 18);
+        }
+
+        function getDirections() {
+            var directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLongitude},${userLatitude};${longitude},${latitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+            fetch(directionsUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var duration = data.routes[0].duration;
+                    var distance = data.routes[0].distance;
+                    var travelTime = (duration / 60).toFixed(2);
+                    var travelDistance = (distance / 1000).toFixed(2);
+
+                    var travelInfo = `
+                Estimated Travel Time: ${travelTime} minutes<br>
+                Estimated Distance: ${travelDistance} km
+            `;
+                    incidentMarker.bindPopup(`<b><?php echo $incident['incident_type']; ?></b><br>` +
+                        `Location: <?php echo $incident['incident_location_map']; ?><br>` +
+                        `${travelInfo}`).openPopup();
+
+                    var routeGeoJSON = data.routes[0].geometry;
+                    L.geoJSON(routeGeoJSON, {
+                        style: {
+                            color: "#FF5733",
+                            weight: 5,
+                            opacity: 0.7
+                        }
+                    }).addTo(map);
+                })
+                .catch(error => console.log("Error fetching route data:", error));
         }
     </script>
 
-    <!-- CONFIRM DELETION -->
-    <script>
-        function setIncidentId(incidentId) {
-            const confirmDeleteButton = document.getElementById('confirmDelete');
-            confirmDeleteButton.setAttribute('href', 'delete_incident.php?id=' + incidentId);
-        }
-    </script>
+
 </body>
 
 </html>
