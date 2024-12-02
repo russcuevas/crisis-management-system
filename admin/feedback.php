@@ -303,6 +303,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <th>#</th>
                                             <th>Sender</th>
                                             <th>Email</th>
+                                            <th>Question</th>
                                             <th>Feedback</th>
                                             <th>Created At</th>
                                             <th>Updated At</th>
@@ -315,6 +316,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <td><?php echo $feedback['id'] ?></td>
                                                 <td><?php echo $feedback['fullname'] ?></td>
                                                 <td><?php echo $feedback['email'] ?></td>
+                                                <td><?php echo $feedback['question'] ?></td>
                                                 <td><?php echo $feedback['feedback'] ?></td>
                                                 <td><?php echo $feedback['created_at'] ?></td>
                                                 <td><?php echo $feedback['updated_at'] ?></td>

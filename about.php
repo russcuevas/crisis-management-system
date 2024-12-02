@@ -6,11 +6,12 @@ $is_logged_in = isset($_SESSION['user_id']);
 // feedback query
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fullname = $_POST['fullname'];
+    $question = $_POST['question'];
     $email = $_POST['email'];
     $feedback = $_POST['feedback'];
 
-    $stmt = $conn->prepare("INSERT INTO `tbl_feedback` (email, feedback, fullname) VALUES (?, ?, ?)");
-    $stmt->execute([$email, $feedback, $fullname]);
+    $stmt = $conn->prepare("INSERT INTO `tbl_feedback` (email, feedback, fullname, question) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$email, $feedback, $fullname, $question]);
 
     if ($stmt) {
         $_SESSION['success'] = 'Thank you for sending your feedback!';
@@ -39,6 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <style>
         /* validation */
         #fullname-error {
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #question-error {
             font-size: 12px;
             margin-top: 5px;
             font-weight: 900;
@@ -166,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- User Feedback Section -->
         <div class="mt-5">
-            <h3 class="section-title text-center">We Value Your Feedback</h3>
+            <h3 class="section-title text-center">Ask Question and make <br> a feedback here</h3>
 
             <div class="row">
                 <!-- Feedback Form Column (Left) -->
@@ -178,6 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <label style="color: #212529; font-weight: 600;" class="form-label">Your Name</label>
                                 <div class="form-line">
                                     <input type="text" class="form-control" name="fullname" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group form-float" style="margin-top: 10px !important;">
+                                <label style="color: #212529; font-weight: 600;" class="form-label">Question</label>
+                                <div class="form-line">
+                                    <input type="text" class="form-control" name="question" required>
                                 </div>
                             </div>
 
