@@ -1,0 +1,75 @@
+CAPSTONE CLIENT : Integrated information platform for unified Crisis management
+
+database : crisisdatabase
+ 
+SMTP
+crisismanagement001@gmail.com
+Crisismanagement01!
+esbtdkbkszzputyq
+
+tables
+
+tbl_admin
+email
+password
+created_at
+updated_at
+
+tbl_users
+email
+password
+fullname
+contact
+province
+purok
+barangay
+municipality
+is_verified
+code
+created_at
+updated_at
+
+
+tbl_incedents
+user_id->foreign to tbl_users
+incident_type
+incident_proof
+incident_location
+incident_landmark
+incident_datetime
+incident_location_map
+status -> pending, approve, cancelled
+created_at
+updated_at
+
+tbl_feedback
+email
+feedback
+created_at
+updated_at
+
+tbl_notifications
+incedents_id -> foreign to tbl_incedents
+is_view -> 0 - 1
+created_at
+updated_at
+
+USER PAGE
+HOME
+PROFILE
+REPORT
+ABOUT US
+
+ADMIN PAGE
+DASHBOARD
+USERS
+POSTS
+VISITS
+
+GUEST
+VIEWING ALL THE USERS PAGE BUT CANNOT EDIT ONLY VIEW
+
+
+
+functions
+send sms notification send code then verify account
