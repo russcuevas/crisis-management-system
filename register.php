@@ -49,22 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $municipality = $_POST['municipality'];
     $confirm_password = $_POST['confirm'];
 
-    // Handle Profile Picture Upload
     $profile_picture = null;
     if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
-        // Specify the folder where the images will be uploaded
-        $target_dir = "assets/images/profile/";  // Set the target directory
+        $target_dir = "assets/images/profile/";
         $target_file = $target_dir . basename($_FILES["profile_picture"]["name"]);
 
-        // Check if the file is an image
         $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
         $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
 
         if (in_array($imageFileType, $allowed_types)) {
-            // Move the uploaded file to the target directory
             if (move_uploaded_file($_FILES["profile_picture"]["tmp_name"], $target_file)) {
-                // Extract only the file name (not the full path)
-                $profile_picture = basename($target_file); // Save only the filename (e.g., IMG_0884.jpg)
+                $profile_picture = basename($target_file);
             } else {
                 $_SESSION['error'] = 'Sorry, there was an error uploading your file.';
                 header('Location: register.php');
@@ -86,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $hashed_password = sha1($password);
     $verification_code = rand(100000, 999999);
 
-    // Check if email is already registered
     $stmt = $conn->prepare("SELECT * FROM tbl_users WHERE email = :email");
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
     $stmt->execute();
@@ -97,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Insert user data into the database
     $query = "INSERT INTO tbl_users (email, password, fullname, contact, province, purok, barangay, municipality, profile_picture, code) 
               VALUES (:email, :password, :fullname, :contact, :province, :purok, :barangay, :municipality, :profile_picture, :code)";
     $stmt = $conn->prepare($query);
@@ -109,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':purok', $purok);
     $stmt->bindParam(':barangay', $barangay);
     $stmt->bindParam(':municipality', $municipality);
-    $stmt->bindParam(':profile_picture', $profile_picture);  // Store only the image filename
+    $stmt->bindParam(':profile_picture', $profile_picture);
     $stmt->bindParam(':code', $verification_code);
 
     if ($stmt->execute()) {
@@ -155,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <style>
         body {
             font-family: 'Poppins', sans-serif !important;
-            background-color: #f5f5f5 !important;
+            background: linear-gradient(to right, #000000, #3c0f12) !important;
         }
     </style>
 </head>
@@ -165,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="logo">
             <a href="home.php" class="logo-link">
                 <img src="assets/images/login/crisis.jpg" alt="Crisis Management System Logo" class="logo-img">
-                <span class="logo-text" style="font-size: 50px; color: #bc1823;">CMS</span>
+                <span class="logo-text" style="font-size: 50px; color: whitesmoke;">CMS</span>
             </a>
         </div>
 

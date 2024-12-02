@@ -40,7 +40,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
+            background: linear-gradient(to right, #000000, #3c0f12);
             margin: 0;
             padding: 0;
             color: #333333;
@@ -84,7 +84,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         h2 {
             font-size: 2.5rem;
             font-weight: 600;
-            color: #bc1823;
+            color: whitesmoke;
             margin-bottom: 30px;
         }
 
@@ -185,13 +185,13 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h2>History of My Reports</h2>
 
         <div class="row mb-3">
-        <div class="col-md-12">
-            <button class="btn btn-secondary btn-sm" id="allStatus">All status</button>
-            <button class="btn btn-secondary btn-sm" id="filterPending">Pending</button>
-            <button class="btn btn-secondary btn-sm" id="filterApproved">Approved</button>
-            <!-- <button class="btn btn-secondary btn-sm" id="filterCancelled">Cancelled</button> -->
+            <div class="col-md-12">
+                <button class="btn btn-secondary btn-sm" id="allStatus">All status</button>
+                <button class="btn btn-secondary btn-sm" id="filterPending">Pending</button>
+                <button class="btn btn-secondary btn-sm" id="filterApproved">Approved</button>
+                <!-- <button class="btn btn-secondary btn-sm" id="filterCancelled">Cancelled</button> -->
+            </div>
         </div>
-    </div>
 
         <!-- Report History Table -->
         <div class="table-container">
@@ -249,7 +249,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
 
     <!-- SWEETALERT UPDATE PROFILE -->
-        <?php if (isset($_SESSION['success'])): ?>
+    <?php if (isset($_SESSION['success'])): ?>
         <script>
             Swal.fire({
                 icon: 'success',

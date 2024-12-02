@@ -57,7 +57,7 @@ if ($incident_id) {
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
+            background: linear-gradient(to right, #000000, #3c0f12) !important;
             margin: 0;
             padding: 0;
             color: #333333;
@@ -208,8 +208,8 @@ if ($incident_id) {
     </nav>
 
     <div class="container">
-        <h3>Incident History</h3>
-        <h6><?php echo $incident['incident_location_map'] ?></h6>
+        <h3 style="color: whitesmoke;">Incident History</h3>
+        <h6 style="color: whitesmoke;"><?php echo $incident['incident_location_map'] ?></h6>
 
         <div id="map"></div>
 

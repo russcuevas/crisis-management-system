@@ -1,6 +1,6 @@
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: black;
+    background: linear-gradient(to right, #000000, #3c0f12);
     margin: 0;
     padding: 0;
     color: #333333;
@@ -40,7 +40,7 @@ body {
 h2 {
     font-size: 2.5rem;
     font-weight: 600;
-    color: #bc1823;
+    color: whitesmoke;
     margin-bottom: 30px;
 }
 

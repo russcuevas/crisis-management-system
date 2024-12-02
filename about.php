@@ -38,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/home.css">
     <style>
+        .content-text {
+            color: white !important;
+        }
+
         /* validation */
         #fullname-error {
             font-size: 12px;
@@ -144,20 +148,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                 <!-- Logos Section -->
                 <div class="d-flex" style="gap: 15px;">
-                    <!-- Logo 1 -->
                     <div class="logo">
                         <img src="https://th.bing.com/th/id/OIP.no_UV27v6Gohe9mV3Ka6mwAAAA?rs=1&pid=ImgDetMain"
-                            alt="Logo 1" class="img-fluid" style="max-width: 100px;">
+                            alt="Logo 1" class="img-fluid" style="max-width: 100px; border-radius: 50px;">
                     </div>
-                    <!-- Logo 2 -->
                     <div class="logo">
                         <img src="https://th.bing.com/th/id/OIP.no_UV27v6Gohe9mV3Ka6mwAAAA?rs=1&pid=ImgDetMain"
-                            alt="Logo 2" class="img-fluid" style="max-width: 100px;">
+                            alt="Logo 2" class="img-fluid" style="max-width: 100px; border-radius: 50px;">
                     </div>
-                    <!-- Logo 3 -->
                     <div class="logo">
                         <img src="https://th.bing.com/th/id/OIP.no_UV27v6Gohe9mV3Ka6mwAAAA?rs=1&pid=ImgDetMain"
-                            alt="Logo 3" class="img-fluid" style="max-width: 100px;">
+                            alt="Logo 3" class="img-fluid" style="max-width: 100px; border-radius: 50px;">
                     </div>
                 </div>
             </div>
@@ -172,12 +173,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <hr>
 
-        <!-- User Feedback Section -->
         <div class="mt-5">
-            <h3 class="section-title text-center">Ask Question and make <br> a feedback here</h3>
+            <h3 class="section-title text-center" style="color: whitesmoke !important;">Ask Question and make <br> a feedback here</h3>
 
             <div class="row">
-                <!-- Feedback Form Column (Left) -->
                 <div class="col-12 col-md-6 mb-4">
                     <div class="feedback-form">
                         <form id="form_advanced_validation" action="#" method="POST">
@@ -224,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <img src="assets/images/about-contact.png" alt="Contact Image" class="img-fluid rounded-3"
                         style="width: 100%;">
 
-                    <p class="content-text text-left">Your feedback is important to us as it helps us improve our system
+                    <p class="content-text text-left mt-4">Your feedback is important to us as it helps us improve our system
                         and
                         services.
                         Please share your thoughts, suggestions, or any issues you have encountered using the Crisis
