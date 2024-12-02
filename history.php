@@ -184,6 +184,15 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="main-content">
         <h2>History of My Reports</h2>
 
+        <div class="row mb-3">
+        <div class="col-md-12">
+            <button class="btn btn-secondary btn-sm" id="allStatus">All status</button>
+            <button class="btn btn-secondary btn-sm" id="filterPending">Pending</button>
+            <button class="btn btn-secondary btn-sm" id="filterApproved">Approved</button>
+            <!-- <button class="btn btn-secondary btn-sm" id="filterCancelled">Cancelled</button> -->
+        </div>
+    </div>
+
         <!-- Report History Table -->
         <div class="table-container">
             <div class="table-responsive">
@@ -201,11 +210,13 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <tbody>
                         <?php $count = 1; ?>
                         <?php foreach ($incidents as $incident): ?>
-                            <tr>
+                            <tr data-status="<?php echo htmlspecialchars($incident['status']); ?>">
                                 <th scope="row"><?php echo $count++; ?></th>
                                 <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
                                 <td><?php echo htmlspecialchars($incident['incident_location_map']); ?></td>
-                                <td><?php echo htmlspecialchars($incident['status']); ?></td>
+                                <td class="<?php echo htmlspecialchars($incident['status']) === 'Approved' ? 'text-success' : (htmlspecialchars($incident['status']) === 'Pending' ? 'text-warning' : ''); ?>">
+                                    <?php echo htmlspecialchars($incident['status']); ?>
+                                </td>
                                 <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
                                 <td class="action-buttons">
                                     <a href="view_history.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-warning btn-sm">View Information</a>
@@ -265,8 +276,35 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <script>
         $(document).ready(function() {
             $('#historyTable').DataTable({
-                responsive: true 
+                responsive: true
             });
+
+            $('#filterPending').on('click', function() {
+                filterTable('Pending');
+            });
+
+            $('#filterApproved').on('click', function() {
+                filterTable('Approved');
+            });
+
+            // $('#filterCancelled').on('click', function() {
+            //     filterTable('Cancelled');
+            // });
+
+            $('#allStatus').on('click', function() {
+                filterTable('');
+            });
+
+            function filterTable(status) {
+                $('#historyTable tbody tr').each(function() {
+                    const rowStatus = $(this).data('status');
+                    if (status === '' || rowStatus === status) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         });
     </script>
 
