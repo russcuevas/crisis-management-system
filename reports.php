@@ -297,7 +297,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         <!-- Post Button -->
                         <div class="text-end mt-5">
-                            <button type="submit" class="btn btn-primary">Post Report</button>
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <button type="submit" class="btn btn-primary">POST REPORT</button>
+                            <?php else: ?>
+                                <a href="login.php" class="btn btn-danger">LOGIN FIRST TO POST</a>
+                            <?php endif; ?>
                         </div>
                     </form>
                 </div>

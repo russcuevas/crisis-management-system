@@ -11,36 +11,30 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Query to get the user data based on the provided email
     $query = "SELECT * FROM tbl_users WHERE email = :email";
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
     $stmt->execute();
 
-    // Check if user exists
     if ($stmt->rowCount() == 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Verify password
         if (sha1($password) === $user['password']) {
-            // Check if the user is verified
             if ($user['is_verified'] == 1) {
-                // Successful login
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['is_verified'] = $user['is_verified'];
 
-                // Redirect to home page
                 header('Location: home.php');
                 exit();
             } else {
-                $_SESSION['error_message'] = "Your account is not verified!";
+                $_SESSION['error_message'] = "Your account is not verified! check your email";
             }
         } else {
-            $_SESSION['error_message'] = "Invalid password!";
+            $_SESSION['error_message'] = "Invalid email or password!";
         }
     } else {
-        $_SESSION['error_message'] = "No user found with that email address!";
+        $_SESSION['error_message'] = "Invalid email or password!";
     }
 }
 ?>
