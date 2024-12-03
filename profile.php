@@ -129,13 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                        <a class="nav-link active dropdown-toggle" href="#" id="profileDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Profile
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                             <?php if ($is_logged_in): ?>
-                                <li><a class="dropdown-item" href="profile.php">Change Details</a></li>
+                                <li><a class="dropdown-item active" href="profile.php">Change Details</a></li>
                                 <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                             <?php else: ?>
                                 <li><a class="dropdown-item" href="login.php">Login</a></li>
@@ -163,10 +163,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="profile-details">
             <p><strong>Email:</strong> <?php echo htmlspecialchars($email); ?></p>
             <p><strong>Contact Number:</strong> <?php echo htmlspecialchars($contact_number); ?></p>
-            <p><strong>Province:</strong> <?php echo htmlspecialchars($province); ?></p>
             <p><strong>Purok:</strong> <?php echo htmlspecialchars($purok); ?></p>
             <p><strong>Barangay:</strong> <?php echo htmlspecialchars($barangay); ?></p>
             <p><strong>Municipality:</strong> <?php echo htmlspecialchars($municipality); ?></p>
+            <p><strong>Province:</strong> <?php echo htmlspecialchars($province); ?></p>
             <button class="btn btn-warning update-btn" data-bs-toggle="modal" data-bs-target="#updateProfileModal">Update Profile</button>
         </div>
 

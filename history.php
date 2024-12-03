@@ -74,6 +74,7 @@ $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .nav-link.active {
             color: black !important;
+            font-weight: 900;
         }
 
         .main-content {

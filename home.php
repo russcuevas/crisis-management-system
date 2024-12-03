@@ -142,7 +142,7 @@ function timeAgo($timestamp)
         <?php if (empty($incidents)): ?>
             <div class="no-posts-container">
                 <div class="no-posts-box">
-                    No post incidents available.
+                    No post incidents available stay updated.
                 </div>
             </div>
 

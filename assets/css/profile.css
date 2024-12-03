@@ -66,7 +66,7 @@ body {
 .profile-details {
     background-color: #fff;
     border: 1px solid #e0e0e0;
-    padding: 20px;
+    padding: 50px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     font-size: 1.1rem;
@@ -163,4 +163,19 @@ footer a:hover {
 
 .form-group .form-line.error {
     border: 2px solid red !important;
+}
+
+.nav-item .dropdown-item.active {
+    background-color: #bc1823 !important;
+    color: #fff !important;
+}
+
+.nav-item .dropdown-item:hover {
+    background-color: #bc1823;
+    color: #fff;
+}
+
+.nav-link.active {
+    color: black !important;
+    font-weight: 900;
 }

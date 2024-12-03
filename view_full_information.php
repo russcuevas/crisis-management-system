@@ -88,6 +88,7 @@ if ($incident_id) {
 
         .nav-link.active {
             color: black !important;
+            font-weight: 900;
         }
 
         #map {

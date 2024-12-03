@@ -87,6 +87,7 @@ if ($incident_id) {
 
         .nav-link.active {
             color: black !important;
+            font-weight: 900;
         }
 
         #map {
@@ -131,6 +132,16 @@ if ($incident_id) {
         .incident-details p {
             font-size: 1rem;
             margin-bottom: 10px;
+        }
+
+        .nav-item .dropdown-item.active {
+            background-color: #bc1823 !important;
+            color: #fff !important;
+        }
+
+        .nav-item .dropdown-item:hover {
+            background-color: #bc1823;
+            color: #fff;
         }
 
         .swiper-pagination {

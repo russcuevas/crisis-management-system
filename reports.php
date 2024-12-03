@@ -8,7 +8,6 @@ $user_id = $_SESSION['user_id'] ?? null;
 
 // Post report query
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Other fields (existing code)
     $incidentType = $_POST['incident_type'] ?? '';
     $otherIncident = $_POST['otherIncident'] ?? '';
     $description = $_POST['incident_description'] ?? '';
@@ -17,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dateTime = $_POST['incident_datetime'] ?? '';
     $mapLocation = $_POST['incident_location_map'] ?? '';
     
-    // Get the latitude and longitude from the form
     $latitude = $_POST['incident_latitude'] ?? null;
     $longitude = $_POST['incident_longitude'] ?? null;
 
@@ -25,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $incidentType = $otherIncident;
     }
 
-    // Handle file uploads (existing code)
     $incidentProof = [];
     if (isset($_FILES['incident_proof']) && !empty($_FILES['incident_proof']['name'][0])) {
         $uploadedFiles = $_FILES['incident_proof'];
@@ -54,7 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Update SQL query to insert latitude and longitude
     $query = "INSERT INTO tbl_incidents 
               (user_id, incident_type, incident_description, incident_proof, incident_location, 
                incident_landmark, incident_datetime, incident_location_map, latitude, longitude, status, created_at, updated_at) 
@@ -180,9 +176,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             Reports
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
-                            <li><a class="dropdown-item active" href="reports.php">Post Complain</a></li>
-                            <li><a class="dropdown-item" href="history.php">View History</a></li>
-
+                            <?php if ($is_logged_in): ?>
+                                <li><a class="dropdown-item active" href="reports.php">Post Complain</a></li>
+                                <li><a class="dropdown-item" href="history.php">View History</a></li>
+                            <?php else: ?>
+                                <li><a class="dropdown-item active" href="reports.php">Post Complain</a></li>
+                            <?php endif; ?>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
