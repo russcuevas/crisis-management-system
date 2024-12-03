@@ -1,5 +1,8 @@
 <?php
 include '../database/connection.php';
+require '../vendor/autoload.php';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 session_start();
 $admin_id = $_SESSION['admin_id'];
@@ -7,11 +10,71 @@ if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
-//fetch feedback
-$get_feedback = "SELECT * FROM `tbl_feedback`";
-$get_stmt = $conn->query($get_feedback);
-$feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
+if (isset($_GET['id'])) {
+    $feedback_id = $_GET['id'];
+    
+    $get_feedback_query = "SELECT * FROM `tbl_feedback` WHERE id = :feedback_id";
+    $stmt = $conn->prepare($get_feedback_query);
+    $stmt->bindParam(':feedback_id', $feedback_id);
+    $stmt->execute();
+    $feedback = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($feedback) {
+        $sender = $feedback['fullname'];
+        $email = $feedback['email'];
+        $question = $feedback['question'];
+        $feedback_text = $feedback['feedback'];
+    } else {
+        echo "Feedback not found.";
+    }
+} else {
+    echo "No feedback ID provided.";
+}
+
+function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback_text) {
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'crisismanagement001@gmail.com';
+        $mail->Password = 'esbtdkbkszzputyq';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->setFrom('crisismanagement001@gmail.com', 'Crisis Management System');
+        $mail->addAddress($recipientEmail);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Response to Your Feedback';
+
+        $mail->Body = "Dear User,<br><br>" .
+                      "Thank you for your feedback!<br><br>" .
+                      "We have reviewed your question: <b>$question</b><br>" .
+                      "Your feedback: <i>$feedback_text</i><br><br>" .
+                      "Our response: <p>$adminResponse</p><br><br>" .
+                      "Best regards,<br>" .
+                      "Crisis Management Team";
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
+    $response = $_POST['response'];
+    if (sendResponseEmail($email, $response, $question, $feedback_text)) {
+        $_SESSION['feedback_success'] = 'Response sent successfully!';
+        header('Location: feedback.php');
+        exit();
+    } else {
+        $_SESSION['feedback_error'] = 'Failed to send the response.';
+        header('Location: feedback.php');
+        exit();
+    }    
+}
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -29,7 +92,8 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Bootstrap Core Css -->
     <link href="plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
-
+    <!-- Bootstrap Select Css -->
+    <link href="plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
     <!-- Waves Effect Css -->
     <link href="plugins/node-waves/waves.css" rel="stylesheet" />
 
@@ -44,11 +108,17 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-
+        .align-right {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
-
 <body class="theme-red">
     <!-- Page Loader -->
     <div class="page-loader-wrapper">
@@ -131,7 +201,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="users.php">
                             <i class="material-icons">groups</i>
                             <span>Users</span>
@@ -139,7 +209,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </li>
 
 
-                    <li class="active">
+                    <li>
                         <a href="feedback.php">
                             <i class="material-icons">feedback</i>
                             <span>Feedback</span>
@@ -260,103 +330,58 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
-                            Dashboard</a></li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">feedback</i>
-                        Feedback
+                    <li><a href="users.php"><i style="font-size: 20px;" class="material-icons">feedback</i>
+                            Feedback</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">email</i>
+                        Send an email response
                     </li>
                 </ol>
             </div>
-
-            <!-- CPU Usage -->
             <div class="row clearfix">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
-                            <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                FEEDBACK MANAGEMENT
-                            </h2>
+                            <h2>Send Response</h2>
                         </div>
                         <div class="body">
-
-                            <!-- ALERTS -->
-                            <?php if (isset($_SESSION['feedback_success'])): ?>
-                                <div class="alert alert-success">
-                                    <?php echo $_SESSION['feedback_success']; ?>
-                                    <?php unset($_SESSION['feedback_success']);
-                                    ?>
+                            <form method="POST">
+                                <div class="form-group form-float">
+                                    <label class="form-label">Sender</label>
+                                    <input style="background-color: gray; color: whitesmoke" type="text" class="form-control" value="<?php echo htmlspecialchars($sender); ?>" readonly>
                                 </div>
-                            <?php endif; ?>
-
-                            <?php if (isset($_SESSION['feedback_error'])): ?>
-                                <div class="alert alert-danger">
-                                    <?php echo $_SESSION['feedback_error']; ?>
-                                    <?php unset($_SESSION['feedback_error']);
-                                    ?>
+                                <div class="form-group form-float">
+                                    <label class="form-label">Email</label>
+                                    <input style="background-color: gray; color: whitesmoke" type="email" class="form-control" value="<?php echo htmlspecialchars($email); ?>" readonly>
                                 </div>
-                            <?php endif; ?>
 
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Sender</th>
-                                            <th>Email</th>
-                                            <th>Question</th>
-                                            <th>Feedback</th>
-                                            <th>Created At</th>
-                                            <th>Updated At</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($feedbacks as $feedback) : ?>
-                                            <tr>
-                                                <td><?php echo $feedback['id'] ?></td>
-                                                <td><?php echo $feedback['fullname'] ?></td>
-                                                <td><?php echo $feedback['email'] ?></td>
-                                                <td><?php echo $feedback['question'] ?></td>
-                                                <td><?php echo $feedback['feedback'] ?></td>
-                                                <td><?php echo $feedback['created_at'] ?></td>
-                                                <td><?php echo $feedback['updated_at'] ?></td>
+                                <div class="form-group form-float">
+                                    <label class="form-label">Question</label>
+                                    <textarea style="background-color: gray; color: whitesmoke" class="form-control" rows="3" readonly><?php echo htmlspecialchars($question); ?></textarea>
+                                </div>
 
-                                                <td>
-                                                    <a href="send_feedback.php?id=<?php echo $feedback['id']; ?>" class="btn btn-warning">Send an email</a>
-                                                    <a href="javascript:void(0);" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" onclick="setDeleteUrl(<?php echo $feedback['id']; ?>)">DELETE</a>
-                                                </td>
+                                <div class="form-group form-float">
+                                    <label class="form-label">Feedback</label>
+                                    <textarea style="background-color: gray; color: whitesmoke" class="form-control" rows="3" readonly><?php echo htmlspecialchars($feedback_text); ?></textarea>
+                                </div>
 
-                                                <!-- DELETE MODAL -->
-                                                <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                Are you sure you want to delete this feedback?
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Delete</a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <!-- END DELETE MODAL -->
-                                            </tr>
-                                        <?php endforeach ?>
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div class="form-group form-float">
+                                    <label class="form-label">Your Response</label>
+                                    <div class="form-line">
+                                        <textarea class="form-control" name="response" rows="4" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="align-right">
+                                    <button type="submit" class="btn bg-red waves-effect">Send Response</button>
+                                    <a href="feedback.php" class="btn btn-link waves-effect">Cancel</a>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
     </section>
+
 
     <!-- Jquery Core Js -->
     <script src="plugins/jquery/jquery.min.js"></script>
@@ -364,63 +389,29 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Bootstrap Core Js -->
     <script src="plugins/bootstrap/js/bootstrap.js"></script>
 
+    <!-- Select Plugin Js -->
+    <script src="plugins/bootstrap-select/js/bootstrap-select.js"></script>
+
     <!-- Slimscroll Plugin Js -->
     <script src="plugins/jquery-slimscroll/jquery.slimscroll.js"></script>
 
     <!-- Jquery Validation Plugin Css -->
     <script src="plugins/jquery-validation/jquery.validate.js"></script>
-    <script src="js/pages/forms/form-validation.js"></script>
+
+    <!-- JQuery Steps Plugin Js -->
+    <script src="plugins/jquery-steps/jquery.steps.js"></script>
+
+    <!-- Sweet Alert Plugin Js -->
+    <script src="plugins/sweetalert/sweetalert.min.js"></script>
 
     <!-- Waves Effect Plugin Js -->
     <script src="plugins/node-waves/waves.js"></script>
 
-    <!-- Jquery CountTo Plugin Js -->
-    <script src="plugins/jquery-countto/jquery.countTo.js"></script>
-
-    <!-- Morris Plugin Js -->
-    <script src="plugins/raphael/raphael.min.js"></script>
-    <script src="plugins/morrisjs/morris.js"></script>
-
-    <!-- ChartJs -->
-    <script src="plugins/chartjs/Chart.bundle.js"></script>
-
-    <!-- Flot Charts Plugin Js -->
-    <script src="plugins/flot-charts/jquery.flot.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.resize.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.pie.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.categories.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.time.js"></script>
-
-    <!-- Sparkline Chart Plugin Js -->
-    <script src="plugins/jquery-sparkline/jquery.sparkline.js"></script>
-
-    <!-- Datatable -->
-    <script src="plugins/jquery-datatable/jquery.dataTables.js"></script>
-    <script src="plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.flash.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/jszip.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/pdfmake.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/vfs_fonts.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.html5.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.print.min.js"></script>
-    <script src="js/pages/tables/jquery-datatable.js"></script>
     <!-- Custom Js -->
     <script src="js/admin.js"></script>
-    <script src="js/pages/index.js"></script>
+    <script src="js/pages/forms/form-validation.js"></script>
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
-
-
-    <!-- FUNCTION DELETING FEEDBACK -->
-    <script type="text/javascript">
-        function setDeleteUrl(feedbackId) {
-            var deleteUrl = 'delete_feedback.php?id=' + feedbackId;
-            document.getElementById('confirmDeleteBtn').setAttribute('href', deleteUrl);
-        }
-    </script>
-
 </body>
-
 </html>

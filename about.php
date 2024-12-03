@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->execute([$email, $feedback, $fullname, $question]);
 
     if ($stmt) {
-        $_SESSION['success'] = 'Thank you for sending your feedback!';
+        $_SESSION['success'] = 'Thank you for sending your feedback! your question will answer through email please check';
         header('Location: about.php');
         exit;
     } else {

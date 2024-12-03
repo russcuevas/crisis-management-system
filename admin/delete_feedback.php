@@ -14,7 +14,7 @@ if (isset($_GET['id'])) {
         $stmt = $conn->prepare($delete_query);
         $stmt->bindParam(':id', $feedback_id, PDO::PARAM_INT);
         if ($stmt->execute()) {
-            $_SESSION['feedback_deleted'] = 'Feedback deleted successfully!';
+            $_SESSION['feedback_success'] = 'Feedback deleted successfully!';
         } else {
             $_SESSION['feedback_error'] = 'There was an error deleting the feedback.';
         }

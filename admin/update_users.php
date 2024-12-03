@@ -100,7 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-
+        .align-right {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 
@@ -389,8 +393,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn bg-red waves-effect">Save Changes</button>
-                                <a href="users.php" class="btn btn-link waves-effect">Cancel</a>
+                                <div class="align-right">
+                                    <button type="submit" class="btn bg-red waves-effect">Save Changes</button>
+                                    <a href="users.php" class="btn btn-link waves-effect">Cancel</a>
+                                </div>
                             </form>
                         </div>
                     </div>
