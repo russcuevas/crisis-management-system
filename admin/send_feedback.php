@@ -61,6 +61,8 @@ function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback
     }
 }
 
+
+// sending email response
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
     $response = $_POST['response'];
     if (sendResponseEmail($email, $response, $question, $feedback_text)) {
@@ -111,6 +113,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
         integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Hold ON -->
+    <link href="css/HoldOn.css" rel="stylesheet">
     <style>
         .align-right {
             display: flex;
@@ -330,7 +334,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="users.php"><i style="font-size: 20px;" class="material-icons">feedback</i>
+                    <li><a href="feedback.php"><i style="font-size: 20px;" class="material-icons">feedback</i>
                             Feedback</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">email</i>
                         Send an email response
@@ -411,6 +415,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
     <script src="js/admin.js"></script>
     <script src="js/pages/forms/form-validation.js"></script>
 
+    <!-- Hold On -->
+    <script src="js/HoldOn.js"></script>
+
+    <!-- EMAIL RESPONSE -->
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.querySelector('form#form_validation');
+            form.addEventListener('submit', function(event) {
+                const response = document.querySelector('[name="response"]').value.trim();
+                
+                if (!response) {
+                    event.preventDefault();
+                    return;
+                }
+                HoldOn.open({
+                    theme: "sk-bounce",
+                    message: "Sending your response...",
+                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                    textColor: "white",
+                    spinnerColor: "#fff"
+                });
+            });
+
+            <?php if (isset($_SESSION['feedback_success']) || isset($_SESSION['feedback_error'])): ?>
+                setTimeout(function() {
+                    HoldOn.close();
+                }, 2000);
+            <?php endif; ?>
+        });
+    </script>
+    <!-- END EMAIL RESPONSE -->
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
 </body>

@@ -60,14 +60,16 @@ tbl_reports
 user_id->foreign to tbl_users
 incident_type ->
 incident_description
-incident_proof ->
+incident_proof -> json
 incident_location
 incident_landmark
 incident_datetime
 incident_location_map
-status -> Approve
+status
 created_at -> now
 updated_at -> now
+latitude
+longitude
 
 tbl_feedback
 email
