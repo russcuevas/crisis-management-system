@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2024 at 02:09 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Generation Time: Dec 03, 2024 at 06:46 AM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -81,14 +81,6 @@ CREATE TABLE `tbl_incidents` (
   `longitude` double DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `tbl_incidents`
---
-
-INSERT INTO `tbl_incidents` (`incident_id`, `user_id`, `incident_type`, `incident_description`, `incident_proof`, `incident_location`, `incident_landmark`, `incident_datetime`, `incident_location_map`, `status`, `created_at`, `updated_at`, `latitude`, `longitude`) VALUES
-(16, 12, 'Fire', 'Hello', '[\"1733131645_Screenshot (12).png\",\"1733131645_Screenshot (13).png\"]', 'Hello', 'Hello', '2024-12-02 19:27:00', 'Roxas, Capiz, Western Visayas, Philippines', 'Approved', '2024-12-02 09:27:25', '2024-12-02 09:30:51', 11.512322409887755, 122.73057698684987),
-(17, 12, 'Flood', 'Hello', '[\"1733131797_Screenshot (10).png\",\"1733131797_Screenshot (11).png\"]', 'Hello', 'Hello', '2024-12-11 17:29:00', 'Malubog-Bagacay-Biga Road, Bagakay, Cebu, Central Visayas, Philippines', 'Pending', '2024-12-02 09:29:57', '2024-12-02 09:29:57', 10.358151400943683, 123.73088525716874);
-
 -- --------------------------------------------------------
 
 --
@@ -117,7 +109,8 @@ CREATE TABLE `tbl_users` (
 --
 
 INSERT INTO `tbl_users` (`id`, `profile_picture`, `email`, `password`, `fullname`, `contact`, `purok`, `barangay`, `municipality`, `province`, `is_verified`, `code`, `created_at`, `updated_at`) VALUES
-(12, 'IMG_0884.jpeg', 'russelcuevas0@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent C. Cuevas', '09495748302', '4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2024-12-01 18:59:41', '2024-12-01 19:48:00');
+(12, 'IMG_0884.jpeg', 'russelcuevas0@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent C. Cuevas', '09495748302', '4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2024-12-01 18:59:41', '2024-12-01 19:48:00'),
+(13, NULL, 'russelcuevas00@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent Cuevas 2', '09495748302', '4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2024-12-02 15:25:52', '2024-12-02 15:25:52');
 
 --
 -- Indexes for dumped tables
@@ -170,13 +163,13 @@ ALTER TABLE `tbl_feedback`
 -- AUTO_INCREMENT for table `tbl_incidents`
 --
 ALTER TABLE `tbl_incidents`
-  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables
