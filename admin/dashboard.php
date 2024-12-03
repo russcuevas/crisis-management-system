@@ -6,6 +6,29 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
+// GET THE ADMIN
+$get_total_admin = "SELECT COUNT(*) AS total_admin FROM `tbl_admin`";
+$stmt_total_admin = $conn->prepare($get_total_admin);
+$stmt_total_admin->execute();
+$result_total_admin = $stmt_total_admin->fetch(PDO::FETCH_ASSOC);
+$total_admin = $result_total_admin['total_admin'];
+// END GET TOTAL ADMIN
+
+// GET THE USERS
+$get_total_users = "SELECT COUNT(*) AS total_users FROM `tbl_users`";
+$stmt_total_users = $conn->prepare($get_total_users);
+$stmt_total_users->execute();
+$result_total_users = $stmt_total_users->fetch(PDO::FETCH_ASSOC);
+$total_users = $result_total_users['total_users'];
+// END GET TOTAL USERS
+
+// GET THE TOTAL INCIDENTS PENDING
+$get_total_incidents_pending = "SELECT COUNT(*) AS total_incidents_pending FROM `tbl_incidents` WHERE status = 'Requesting'";
+$stmt_total_incidents_pending = $conn->prepare($get_total_incidents_pending);
+$stmt_total_incidents_pending->execute();
+$restult_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
+$total_incidents_pending = $restult_total_incidents_pending['total_incidents_pending'];
+// END GET TOTAL INCIDENTS PENDING
 ?>
 <!DOCTYPE html>
 <html>
@@ -263,7 +286,7 @@ if (!isset($admin_id)) {
                         </div>
                         <div class="content">
                             <div class="text" style="color: white !important;">TOTAL ADMIN</div>
-                            <div class="" style="font-size: 20px;">3</div>
+                            <div class="" style="font-size: 20px;"><?php echo $total_admin ?></div>
                         </div>
                     </div>
                 </div>
@@ -274,7 +297,7 @@ if (!isset($admin_id)) {
                         </div>
                         <div class="content">
                             <div class="text" style="color: white !important;">TOTAL USERS</div>
-                            <div class="" style="font-size: 20px;">30</div>
+                            <div class="" style="font-size: 20px;"><?php echo $total_users ?></div>
                         </div>
                     </div>
                 </div>
@@ -285,7 +308,7 @@ if (!isset($admin_id)) {
                         </div>
                         <div class="content">
                             <div class="text" style="color: white !important;">PENDING COMPLAIN</div>
-                            <div class="" style="font-size: 20px;">20</div>
+                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_pending ?></div>
                         </div>
                     </div>
                 </div>

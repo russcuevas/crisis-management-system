@@ -9,7 +9,6 @@ if (!isset($_SESSION['admin_id'])) {
 
 if (isset($_GET['id'])) {
     $feedback_id = $_GET['id'];
-
     try {
         $delete_query = "DELETE FROM tbl_feedback WHERE id = :id";
         $stmt = $conn->prepare($delete_query);
@@ -22,7 +21,6 @@ if (isset($_GET['id'])) {
     } catch (Exception $e) {
         $_SESSION['feedback_error'] = 'Error: ' . $e->getMessage();
     }
-
     header('location:feedback.php');
     exit;
 } else {

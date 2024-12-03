@@ -6,7 +6,63 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
+
+if (isset($_GET['id'])) {
+    $user_id = $_GET['id'];
+    $get_user = "SELECT * FROM `tbl_users` WHERE `id` = :id";
+    $stmt = $conn->prepare($get_user);
+    $stmt->bindParam(':id', $user_id);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user) {
+        $_SESSION['users_error'] = "User ID Not Found";
+        header('location:users.php');
+        exit();
+    }
+} else {
+    $_SESSION['users_error'] = "User ID Not Found";
+    header('location:users.php');
+    exit();
+}
+
+// update function
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $fullname = $_POST['fullname'];
+    $email = $_POST['email'];
+    $contact = $_POST['contact'];
+    $purok = $_POST['purok'];
+    $barangay = $_POST['barangay'];
+    $municipality = $_POST['municipality'];
+    $province = $_POST['province'];
+    $is_verified = $_POST['is_verified'];
+
+    $update_user = "UPDATE `tbl_users` 
+                    SET `fullname` = :fullname, `email` = :email, `contact` = :contact, 
+                        `purok` = :purok, `barangay` = :barangay, 
+                        `municipality` = :municipality, `province` = :province, `is_verified` = :is_verified 
+                    WHERE `id` = :id";
+    
+    $stmt = $conn->prepare($update_user);
+    $stmt->bindParam(':fullname', $fullname);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':contact', $contact);
+    $stmt->bindParam(':purok', $purok);
+    $stmt->bindParam(':barangay', $barangay);
+    $stmt->bindParam(':municipality', $municipality);
+    $stmt->bindParam(':province', $province);
+    $stmt->bindParam(':is_verified', $is_verified);
+    $stmt->bindParam(':id', $user_id);
+
+    if ($stmt->execute()) {
+        $_SESSION['users_success'] = "User information has been updated successfully!";
+        header('Location: users.php');
+        exit();
+    } else {
+        $_SESSION['users_error'] = "Failed to update user information.";
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -24,7 +80,8 @@ if (!isset($admin_id)) {
 
     <!-- Bootstrap Core Css -->
     <link href="plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
-
+    <!-- Bootstrap Select Css -->
+    <link href="plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
     <!-- Waves Effect Css -->
     <link href="plugins/node-waves/waves.css" rel="stylesheet" />
 
@@ -39,6 +96,9 @@ if (!isset($admin_id)) {
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
 
     </style>
@@ -126,7 +186,7 @@ if (!isset($admin_id)) {
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="users.php">
                             <i class="material-icons">groups</i>
                             <span>Users</span>
@@ -141,7 +201,7 @@ if (!isset($admin_id)) {
                         </a>
                     </li>
 
-                    <li class="active">
+                    <li>
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">crisis_alert</i>
                             <span>Posts Incedents</span>
@@ -152,7 +212,7 @@ if (!isset($admin_id)) {
                                     <span>Pending</span>
                                 </a>
                             </li>
-                            <li class="active">
+                            <li>
                                 <a href="approve_complain.php">
                                     <span>Approve</span>
                                 </a>
@@ -253,57 +313,90 @@ if (!isset($admin_id)) {
 
     <section class="content">
         <div class="container-fluid">
-            <div class="block-header">
+        <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
-                            Dashboard</a></li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">crisis_alert</i>
-                        Posts Incedents
-                    </li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">done_all</i>
-                        Approve Complain
+                    <li><a href="users.php"><i style="font-size: 20px;" class="material-icons">groups</i>
+                            Users Management</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">edit</i>
+                        Update User
                     </li>
                 </ol>
             </div>
-
-            <!-- CPU Usage -->
             <div class="row clearfix">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
-                            <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                APPROVED COMPLAIN
-                            </h2>
+                            <h2>Update User Information</h2>
                         </div>
                         <div class="body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <form id="form_validation" method="POST">
+                            <div class="form-group form-float">
+                                    <label class="form-label">Fullname</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="fullname" value="<?php echo $user['fullname']; ?>" required>
+                                    </div>
+                                </div>
+                                <div class="form-group form-float">
+                                    <label class="form-label">Email</label>
+                                    <div class="form-line">
+                                        <input type="email" class="form-control" name="email" value="<?php echo $user['email']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label class="form-label">Contact</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="contact" value="<?php echo $user['contact']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <!-- Address Fields -->
+                                <div class="form-group form-float">
+                                    <label class="form-label">Purok</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="purok" value="<?php echo $user['purok']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label class="form-label">Barangay</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="barangay" value="<?php echo $user['barangay']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label class="form-label">Municipality</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="municipality" value="<?php echo $user['municipality']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label class="form-label">Province</label>
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" name="province" value="<?php echo $user['province']; ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label class="form-label">Verification Status</label>
+                                    <div class="form-line">
+                                        <select name="is_verified" class="form-control" required>
+                                            <option value="1" <?php echo $user['is_verified'] == 1 ? 'selected' : ''; ?>>Verified</option>
+                                            <option value="0" <?php echo $user['is_verified'] == 0 ? 'selected' : ''; ?>>Not Verified</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn bg-red waves-effect">Save Changes</button>
+                                <a href="users.php" class="btn btn-link waves-effect">Cancel</a>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- #END# Basic Validation -->
     </section>
 
     <!-- Jquery Core Js -->
@@ -312,50 +405,27 @@ if (!isset($admin_id)) {
     <!-- Bootstrap Core Js -->
     <script src="plugins/bootstrap/js/bootstrap.js"></script>
 
+    <!-- Select Plugin Js -->
+    <script src="plugins/bootstrap-select/js/bootstrap-select.js"></script>
+
     <!-- Slimscroll Plugin Js -->
     <script src="plugins/jquery-slimscroll/jquery.slimscroll.js"></script>
 
     <!-- Jquery Validation Plugin Css -->
     <script src="plugins/jquery-validation/jquery.validate.js"></script>
-    <script src="js/pages/forms/form-validation.js"></script>
+
+    <!-- JQuery Steps Plugin Js -->
+    <script src="plugins/jquery-steps/jquery.steps.js"></script>
+
+    <!-- Sweet Alert Plugin Js -->
+    <script src="plugins/sweetalert/sweetalert.min.js"></script>
 
     <!-- Waves Effect Plugin Js -->
     <script src="plugins/node-waves/waves.js"></script>
 
-    <!-- Jquery CountTo Plugin Js -->
-    <script src="plugins/jquery-countto/jquery.countTo.js"></script>
-
-    <!-- Morris Plugin Js -->
-    <script src="plugins/raphael/raphael.min.js"></script>
-    <script src="plugins/morrisjs/morris.js"></script>
-
-    <!-- ChartJs -->
-    <script src="plugins/chartjs/Chart.bundle.js"></script>
-
-    <!-- Flot Charts Plugin Js -->
-    <script src="plugins/flot-charts/jquery.flot.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.resize.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.pie.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.categories.js"></script>
-    <script src="plugins/flot-charts/jquery.flot.time.js"></script>
-
-    <!-- Sparkline Chart Plugin Js -->
-    <script src="plugins/jquery-sparkline/jquery.sparkline.js"></script>
-
-    <!-- Datatable -->
-    <script src="plugins/jquery-datatable/jquery.dataTables.js"></script>
-    <script src="plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.flash.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/jszip.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/pdfmake.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/vfs_fonts.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.html5.min.js"></script>
-    <script src="plugins/jquery-datatable/extensions/export/buttons.print.min.js"></script>
-    <script src="js/pages/tables/jquery-datatable.js"></script>
     <!-- Custom Js -->
     <script src="js/admin.js"></script>
-    <script src="js/pages/index.js"></script>
+    <script src="js/pages/forms/form-validation.js"></script>
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>

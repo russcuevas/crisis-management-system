@@ -253,7 +253,7 @@ if (!isset($admin_id)) {
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="index.php"><i style="font-size: 20px;" class="material-icons">home</i>
+                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">report</i>
                         Reports

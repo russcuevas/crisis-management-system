@@ -55,7 +55,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
     <style>
         body {
             font-family: 'Poppins', sans-serif !important;
-            background-color: #f5f5f5 !important;
+            background: linear-gradient(to right, #000000, #3c0f12);
         }
     </style>
 </head>
@@ -65,7 +65,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
         <div class="logo">
             <a href="admin_login.php">
                 <img src="images/admin/crisis.jpg" alt="Crisis Management System Logo" class="logo-img">
-                <span class="logo-text" style="font-size: 50px; color: #bc1823; font-weight: 600 !important;">CMS</span>
+                <span class="logo-text" style="font-size: 50px; color: white; font-weight: 600 !important;">CMS</span>
             </a>
         </div>
 

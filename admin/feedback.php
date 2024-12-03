@@ -260,7 +260,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="index.php"><i style="font-size: 20px;" class="material-icons">home</i>
+                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">feedback</i>
                         Feedback
@@ -289,7 +289,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endif; ?>
 
                             <?php if (isset($_SESSION['feedback_error'])): ?>
-                                <div class="alert alert-error">
+                                <div class="alert alert-danger">
                                     <?php echo $_SESSION['feedback_error']; ?>
                                     <?php unset($_SESSION['feedback_error']);
                                     ?>

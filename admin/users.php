@@ -6,7 +6,15 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
+
+// READ USER
+$get_users = "SELECT * FROM `tbl_users`";
+$get_stmt = $conn->query($get_users);
+$users = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
+// END READ USER
+
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -39,6 +47,9 @@ if (!isset($admin_id)) {
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
 
     </style>
@@ -255,7 +266,7 @@ if (!isset($admin_id)) {
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="index.php"><i style="font-size: 20px;" class="material-icons">home</i>
+                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">groups</i>
                         Users Management
@@ -273,27 +284,86 @@ if (!isset($admin_id)) {
                             </h2>
                         </div>
                         <div class="body">
+
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['users_success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['users_success']; ?>
+                                    <?php unset($_SESSION['users_success']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['users_error'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['users_error']; ?>
+                                    <?php unset($_SESSION['users_error']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
                             <div class="table-responsive">
                                 <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
                                     <thead>
                                         <tr>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
+                                            <th>Fullname</th>
+                                            <th>Email</th>
+                                            <th>Contact</th>
+                                            <th>Address</th>
+                                            <th>Verified</th>
+                                            <th>Created At</th>
+                                            <th>Updated At</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php foreach ($users as $user) : ?>
                                         <tr>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
+                                            <td><?php echo $user['fullname'] ?></td>
+                                            <td><?php echo $user['email'] ?></td>
+                                            <td><?php echo $user['contact'] ?></td>
+                                            <td>
+                                                <?php echo $user['purok'] ?>
+                                                <?php echo $user['barangay'] ?>
+                                                <?php echo $user['municipality'] ?>
+                                                <?php echo $user['province'] ?>
+                                            </td>
+                                            <td><?php echo $user['is_verified'] ?></td>
+                                            <td><?php echo $user['created_at'] ?></td>
+                                            <td><?php echo $user['updated_at'] ?></td>
+                                            <td>
+                                                <a href="update_users.php?id=<?php echo $user['id']; ?>"> <i class="fa fa-edit"></i></a>
+                                                <a href="javascript:void(0);" data-toggle="modal" data-target="#deleteUserModal" onclick="setUserId(<?php echo $user['id']; ?>)">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
+
+
+                                                <!-- DELETE USER MODAL -->
+                                                <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Are you sure you want to delete this user?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <form id="deleteUserForm" method="POST" action="delete_users.php">
+                                                                    <input type="hidden" name="id" id="user_id_delete">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
+                                        <?php endforeach ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -356,6 +426,15 @@ if (!isset($admin_id)) {
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+
+    <!-- DELETE USERS -->
+    <script>
+        function setUserId(userId) {
+            document.getElementById('user_id_delete').value = userId;
+        }
+    </script>
+
+
 </body>
 
 </html>
