@@ -29,6 +29,14 @@ $stmt_total_incidents_pending->execute();
 $restult_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
 $total_incidents_pending = $restult_total_incidents_pending['total_incidents_pending'];
 // END GET TOTAL INCIDENTS PENDING
+
+// GET PENDING COMPLAINTS
+$sql = "SELECT tbl_incidents.*, tbl_users.fullname 
+        FROM tbl_incidents 
+        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
+        WHERE tbl_incidents.status = 'pending'";
+$complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+// END GET PENDING COMPLAINTS
 ?>
 <!DOCTYPE html>
 <html>
@@ -315,8 +323,7 @@ $total_incidents_pending = $restult_total_incidents_pending['total_incidents_pen
             </div>
 
             <!-- #END# Widgets -->
-            <!-- CPU Usage -->
-            <div class="row clearfix">
+            <!-- <div class="row clearfix">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
@@ -352,7 +359,7 @@ $total_incidents_pending = $restult_total_incidents_pending['total_incidents_pen
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
     </section>
 
     <!-- Jquery Core Js -->
