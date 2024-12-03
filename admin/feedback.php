@@ -300,7 +300,6 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
                                             <th>Sender</th>
                                             <th>Email</th>
                                             <th>Question</th>
@@ -313,7 +312,6 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <tbody>
                                         <?php foreach ($feedbacks as $feedback) : ?>
                                             <tr>
-                                                <td><?php echo $feedback['id'] ?></td>
                                                 <td><?php echo $feedback['fullname'] ?></td>
                                                 <td><?php echo $feedback['email'] ?></td>
                                                 <td><?php echo $feedback['question'] ?></td>
@@ -322,7 +320,7 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <td><?php echo $feedback['updated_at'] ?></td>
 
                                                 <td>
-                                                    <a href="send_feedback.php?id=<?php echo $feedback['id']; ?>" class="btn btn-warning">Send an email</a>
+                                                    <a href="send_feedback.php?id=<?php echo $feedback['id']; ?>" class="btn btn-warning">SEND AN EMAIL</a>
                                                     <a href="javascript:void(0);" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" onclick="setDeleteUrl(<?php echo $feedback['id']; ?>)">DELETE</a>
                                                 </td>
 

@@ -344,8 +344,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
                             <h2>Send Response</h2>
                         </div>
                         <div class="body">
-                            <form method="POST">
-                                <div class="form-group form-float">
+                        <form id="form_validation" method="POST">
+                        <div class="form-group form-float">
                                     <label class="form-label">Sender</label>
                                     <input style="background-color: gray; color: whitesmoke" type="text" class="form-control" value="<?php echo htmlspecialchars($sender); ?>" readonly>
                                 </div>
