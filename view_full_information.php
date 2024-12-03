@@ -2,6 +2,8 @@
 session_start();
 include('database/connection.php');
 
+$is_logged_in = isset($_SESSION['user_id']);
+$user_id = $_SESSION['user_id'] ?? null;
 $incident_id = $_GET['id'] ?? null;
 if ($incident_id) {
     $query = "SELECT i.*, u.fullname FROM tbl_incidents i
@@ -208,7 +210,13 @@ if ($incident_id) {
     <div class="container">
         <h3 style="color: whitesmoke;">Incident History</h3>
         <h6 style="color: whitesmoke;"><?php echo $incident['incident_location_map'] ?></h6>
-        <h6 style="color: whitesmoke">Posted by: <?php echo htmlspecialchars($incident['fullname']); ?></h6>
+        <?php if ($is_logged_in && $incident['user_id'] == $user_id): ?>
+            <div class="badge badge-primary mb-5" style="background-color: #007bff; color: white; padding: 5px 10px; font-size: 14px;">
+                My Post
+            </div>
+        <?php else: ?>
+            <h6 class="mb-5" style="color: whitesmoke">Posted by: <?php echo htmlspecialchars($incident['fullname']); ?></h6>
+        <?php endif; ?>
         <div id="map"></div>
 
         <div class="card p-4 mt-5">

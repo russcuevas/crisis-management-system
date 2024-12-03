@@ -250,11 +250,8 @@ if ($incident_id) {
                 <?php if ($incident['status'] === 'Approved'): ?>
 
                 <?php else: ?>
-                    <a href="#"
-                        class="btn btn-warning"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal"
-                        onclick="setIncidentId(<?php echo $incident['incident_id']; ?>)">
+                    <a href="edit_request.php?id=<?php echo $incident['incident_id']; ?>"
+                        class="btn btn-warning">
                         EDIT REQUEST
                     </a>
                     <a href="#"
@@ -298,7 +295,29 @@ if ($incident_id) {
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-    <!-- SWIPER AND MAPw -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Check if the session has success or error message
+        <?php if (isset($_SESSION['success'])): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '<?php echo $_SESSION['success']; ?>',
+                confirmButtonText: 'OK'
+            });
+            <?php unset($_SESSION['success']); ?>
+        <?php elseif (isset($_SESSION['error'])): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '<?php echo $_SESSION['error']; ?>',
+                confirmButtonText: 'OK'
+            });
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+    </script>
+
+    <!-- SWIPER AND MAP -->
     <script>
         const swiper = new Swiper('.swiper-container', {
             loop: true,
