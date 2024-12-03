@@ -151,10 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="profile-container">
         <div class="profile-box-header">
             <div class="profile-header">
-                <?php if ($profile_picture): ?>
+                <?php if ($profile_picture && file_exists("assets/images/profile/" . $profile_picture)): ?>
                     <img src="assets/images/profile/<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile Picture" />
                 <?php else: ?>
-                    <p>No profile picture available.</p>
+                    <img src="assets/images/profile/default.png" alt="Profile Picture" />
                 <?php endif; ?>
                 <h2><?php echo htmlspecialchars($fullname); ?></h2>
             </div>

@@ -1,6 +1,7 @@
 <?php
 include '../database/connection.php';
 require '../vendor/autoload.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -12,7 +13,7 @@ if (!isset($admin_id)) {
 
 if (isset($_GET['id'])) {
     $feedback_id = $_GET['id'];
-    
+
     $get_feedback_query = "SELECT * FROM `tbl_feedback` WHERE id = :feedback_id";
     $stmt = $conn->prepare($get_feedback_query);
     $stmt->bindParam(':feedback_id', $feedback_id);
@@ -25,13 +26,18 @@ if (isset($_GET['id'])) {
         $question = $feedback['question'];
         $feedback_text = $feedback['feedback'];
     } else {
-        echo "Feedback not found.";
+        $_SESSION['feedback_error'] = 'Feedback not found';
+        header('Location: feedback.php');
+        exit();
     }
 } else {
-    echo "No feedback ID provided.";
+    $_SESSION['feedback_error'] = 'Feedback not found';
+    header('Location: feedback.php');
+    exit();
 }
 
-function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback_text) {
+function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback_text)
+{
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -48,12 +54,12 @@ function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback
         $mail->Subject = 'Response to Your Feedback';
 
         $mail->Body = "Dear User,<br><br>" .
-                      "Thank you for your feedback!<br><br>" .
-                      "We have reviewed your question: <b>$question</b><br>" .
-                      "Your feedback: <i>$feedback_text</i><br><br>" .
-                      "Our response: <p>$adminResponse</p><br><br>" .
-                      "Best regards,<br>" .
-                      "Crisis Management Team";
+            "Thank you for your feedback!<br><br>" .
+            "We have reviewed your question: <b>$question</b><br>" .
+            "Your feedback: <i>$feedback_text</i><br><br>" .
+            "Our response: <p>$adminResponse</p><br><br>" .
+            "Best regards,<br>" .
+            "Crisis Management Team";
         $mail->send();
         return true;
     } catch (Exception $e) {
@@ -73,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
         $_SESSION['feedback_error'] = 'Failed to send the response.';
         header('Location: feedback.php');
         exit();
-    }    
+    }
 }
 ?>
 
@@ -123,6 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
         }
     </style>
 </head>
+
 <body class="theme-red">
     <!-- Page Loader -->
     <div class="page-loader-wrapper">
@@ -348,8 +355,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
                             <h2>Send Response</h2>
                         </div>
                         <div class="body">
-                        <form id="form_validation" method="POST">
-                        <div class="form-group form-float">
+                            <form id="form_validation" method="POST">
+                                <div class="form-group form-float">
                                     <label class="form-label">Sender</label>
                                     <input style="background-color: gray; color: whitesmoke" type="text" class="form-control" value="<?php echo htmlspecialchars($sender); ?>" readonly>
                                 </div>
@@ -424,7 +431,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
             const form = document.querySelector('form#form_validation');
             form.addEventListener('submit', function(event) {
                 const response = document.querySelector('[name="response"]').value.trim();
-                
+
                 if (!response) {
                     event.preventDefault();
                     return;
@@ -449,4 +456,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
 </body>
+
 </html>

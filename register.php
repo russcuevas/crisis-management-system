@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <span class="input-group-addon">
                                     <i class="material-icons">image</i>
                                 </span>
-                                <label for="">Profile Picture <span
+                                <label style="font-weight: 200 !important" for="">Profile Picture <span
                                         style="font-size: 10px; color: brown;">(Optional)</span>
                                 </label>
                                 <div class="form-line">
