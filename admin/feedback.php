@@ -41,6 +41,11 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- JQuery DataTable Css -->
     <link href="plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css" rel="stylesheet">
 
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
@@ -320,8 +325,8 @@ $feedbacks = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <td><?php echo $feedback['updated_at'] ?></td>
 
                                                 <td>
-                                                    <a href="send_feedback.php?id=<?php echo $feedback['id']; ?>" class="btn btn-warning">SEND AN EMAIL</a>
-                                                    <a href="javascript:void(0);" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" onclick="setDeleteUrl(<?php echo $feedback['id']; ?>)">DELETE</a>
+                                                    <a href="send_feedback.php?id=<?php echo $feedback['id']; ?>" class="btn btn-warning">SEND <i class="fa fa-envelope"></i></a>
+                                                    <a href="javascript:void(0);" class="btn btn-danger" data-toggle="modal" data-target="#deleteConfirmationModal" onclick="setDeleteUrl(<?php echo $feedback['id']; ?>)">DELETE <i class="fa fa-trash"></i></a>
                                                 </td>
 
                                                 <!-- DELETE MODAL -->

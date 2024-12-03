@@ -7,12 +7,30 @@ if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
-$sql = "SELECT tbl_incidents.*, tbl_users.fullname 
-        FROM tbl_incidents 
-        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-        WHERE tbl_incidents.status = 'pending'";
-// Execute the query
-$complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+if (isset($_GET['incident_id'])) {
+    $incident_id = $_GET['incident_id'];
+
+    $sql = "SELECT tbl_incidents.*, tbl_users.fullname 
+            FROM tbl_incidents 
+            LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
+            WHERE tbl_incidents.incident_id = :incident_id";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $incident = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$incident) {
+        $_SESSION['users_error'] = "Incidents Not Found";
+        header('location:users.php');
+        exit();
+    }
+} else {
+    $_SESSION['users_error'] = "Incidents Not Found";
+    header('location:users.php');
+    exit();
+}
+$incident_proof = json_decode($incident['incident_proof'], true);
 ?>
 <!DOCTYPE html>
 <html>
@@ -46,8 +64,28 @@ $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
-    <style>
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
+    <!-- Light Gallery Plugin Css -->
+    <link href="plugins/light-gallery/css/lightgallery.css" rel="stylesheet">
+
+    <!-- Mapbox CSS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet" />
+
+    <!-- Mapbox JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+
+    <style>
+        #map {
+            position: relative;
+            z-index: 1;
+            margin-top: 20px;
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -261,76 +299,85 @@ $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
-                            Dashboard</a></li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">crisis_alert</i>
-                        Posts Incedents
-                    </li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">pending</i>
-                        Pending Complain
-                    </li>
+                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i> Dashboard</a></li>
+                    <li><a href="pending_complain.php"><i style="font-size: 20px;" class="material-icons">crisis_alert</i> Pending Complaints</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">visibility</i> View Incident</li>
                 </ol>
             </div>
 
-            <!-- CPU Usage -->
+            <!-- Incident Details -->
             <div class="row clearfix">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
                             <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                PENDING COMPLAIN
+                                INCIDENT DETAILS
                             </h2>
                         </div>
                         <div class="body">
+                            <div id="map"></div>
 
-                            <!-- ALERTS -->
-                            <?php if (isset($_SESSION['pending_success'])): ?>
-                                <div class="alert alert-success">
-                                    <?php echo $_SESSION['pending_success']; ?>
-                                    <?php unset($_SESSION['pending_success']);
-                                    ?>
-                                </div>
-                            <?php endif; ?>
+                            <div class="table-responsive" style="margin-top: 10px; margin-bottom: 10px;">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th>Incident Picture</th>
+                                        <td>
+                                            <div id="aniimated-thumbnials" class="list-unstyled row clearfix">
+                                                <?php
+                                                if ($incident_proof && is_array($incident_proof)) {
+                                                    foreach ($incident_proof as $image) {
+                                                        $full_image_path = "../assets/images/proofs/" . htmlspecialchars($image);
+                                                        $thumb_image_path = "../assets/images/proofs/" . htmlspecialchars($image);
+                                                ?>
+                                                        <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12" style="margin-right: -20px;">
+                                                            <a href="<?php echo $full_image_path; ?>" data-sub-html="Incident Proof Image">
+                                                                <img style="height: 100px;" class="img-responsive thumbnail" src="<?php echo $thumb_image_path; ?>" alt="Incident Picture">
+                                                            </a>
+                                                        </div>
+                                                <?php
+                                                    }
+                                                } else {
+                                                    echo "No images available";
+                                                }
+                                                ?>
+                                            </div>
 
-                            <?php if (isset($_SESSION['pending_errors'])): ?>
-                                <div class="alert alert-danger">
-                                    <?php echo $_SESSION['pending_errors']; ?>
-                                    <?php unset($_SESSION['pending_errors']);
-                                    ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Complainant</th>
-                                            <th>Type</th>
-                                            <th>Description</th>
-                                            <th>Location</th>
-                                            <th>Landmark</th>
-                                            <th>Date/Time</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($complaints as $complaint): ?>
-                                            <tr>
-                                                <td><?php echo $complaint['fullname'] ?></td>
-                                                <td><?php echo $complaint['incident_type'] ?></td>
-                                                <td><?php echo $complaint['incident_description'] ?></td>
-                                                <td><?php echo $complaint['incident_location_map'] ?></td>
-                                                <td><?php echo $complaint['incident_landmark'] ?></td>
-                                                <td><?php echo $complaint['incident_datetime'] ?></td>
-                                                <td><?php echo $complaint['status'] ?></td>
-                                                <td>
-                                                    <a href="view_pending_incident.php?incident_id=<?php echo $complaint['incident_id']; ?>" class="btn btn-warning sm">View Information</a>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach ?>
-                                    </tbody>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Complainant</th>
+                                        <td><?php echo htmlspecialchars($incident['fullname']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Incident Type</th>
+                                        <td><?php echo htmlspecialchars($incident['incident_type']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Incident Description</th>
+                                        <td><?php echo nl2br(htmlspecialchars($incident['incident_description'])); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Location</th>
+                                        <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Landmark</th>
+                                        <td><?php echo htmlspecialchars($incident['incident_landmark']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Date/Time</th>
+                                        <td><?php echo htmlspecialchars($incident['incident_datetime']); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Status</th>
+                                        <td style="color: orange;"><?php echo htmlspecialchars($incident['status']); ?></td>
+                                    </tr>
                                 </table>
+                            </div>
+                            <div style="display: flex !important; justify-content: end; gap: 10px;">
+                                <button type="submit" class="btn btn-success">Approved</button>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <a href="pending_complain.php" class="btn btn-primary">Go back</a>
                             </div>
                         </div>
                     </div>
@@ -353,6 +400,10 @@ $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Waves Effect Plugin Js -->
     <script src="plugins/node-waves/waves.js"></script>
+
+    <!-- Light Gallery Plugin Js -->
+    <script src="plugins/light-gallery/js/lightgallery-all.js"></script>
+    <script src="js/pages/medias/image-gallery.js"></script>
 
     <!-- Jquery CountTo Plugin Js -->
     <script src="plugins/jquery-countto/jquery.countTo.js"></script>
@@ -391,6 +442,102 @@ $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- MAPPING -->
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaHR0cHJ1c3MiLCJhIjoiY200NGtidzU0MGw1MTJscXhoazc0dDFyMiJ9.fmNrzF3Oa_TcSlcfF8nfCw';
+        var map = L.map('map').setView([<?php echo $incident['latitude']; ?>, <?php echo $incident['longitude']; ?>], 13);
+
+        // Use OpenStreetMap tiles as the base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Max bounds for the map
+        map.setMaxBounds([
+            [4.6, 116.9],
+            [21.4, 126.6]
+        ]);
+
+        var latitude = <?php echo json_encode($incident['latitude']); ?>;
+        var longitude = <?php echo json_encode($incident['longitude']); ?>;
+        var userLatitude, userLongitude;
+        var userMarker, incidentMarker;
+
+        // Create a marker for the incident
+        incidentMarker = L.marker([latitude, longitude]).addTo(map)
+            .bindPopup('<b><?php echo $incident['incident_type']; ?></b><br>' +
+                'Location: <?php echo $incident['incident_location_map']; ?><br>');
+
+        // Geolocation handling
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                userLatitude = position.coords.latitude;
+                userLongitude = position.coords.longitude;
+
+                // Add the user's location marker to the map
+                if (!userMarker) {
+                    userMarker = L.marker([userLatitude, userLongitude]).addTo(map)
+                        .bindPopup('Your Location')
+                        .openPopup();
+                } else {
+                    userMarker.setLatLng([userLatitude, userLongitude]);
+                }
+
+                // Zoom to user's location and fetch directions
+                map.setView([userLatitude, userLongitude], 14);
+                getDirections(userLongitude, userLatitude, longitude, latitude);
+            }, function() {
+                // If user denies location access, zoom to incident location
+                console.log("User denied geolocation access. Showing incident location only.");
+                map.setView([latitude, longitude], 18);
+            }, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        } else {
+            // If geolocation is not supported, show incident location
+            console.log("Geolocation is not supported by this browser. Showing incident location only.");
+            map.setView([latitude, longitude], 18);
+        }
+
+        // Function to get directions from the user's location to the incident
+        function getDirections(userLongitude, userLatitude, incidentLongitude, incidentLatitude) {
+            var directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${userLongitude},${userLatitude};${incidentLongitude},${incidentLatitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+
+            fetch(directionsUrl)
+                .then(response => response.json())
+                .then(data => {
+                    var duration = data.routes[0].duration;
+                    var distance = data.routes[0].distance;
+                    var travelTime = (duration / 60).toFixed(2);
+                    var travelDistance = (distance / 1000).toFixed(2);
+
+                    var travelInfo = `
+                Estimated Travel Time: ${travelTime} minutes<br>
+                Estimated Distance: ${travelDistance} km
+            `;
+
+                    // Bind the route information to the incident marker
+                    incidentMarker.bindPopup(`<b><?php echo $incident['incident_type']; ?></b><br>` +
+                        `Location: <?php echo $incident['incident_location_map']; ?><br>` +
+                        `${travelInfo}`).openPopup();
+
+                    // Add the route to the map
+                    var routeGeoJSON = data.routes[0].geometry;
+                    L.geoJSON(routeGeoJSON, {
+                        style: {
+                            color: "#FF5733",
+                            weight: 5,
+                            opacity: 0.7
+                        }
+                    }).addTo(map);
+                })
+                .catch(error => console.log("Error fetching route data:", error));
+        }
+    </script>
 </body>
 
 </html>

@@ -318,51 +318,54 @@ $users = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </thead>
                                     <tbody>
                                         <?php foreach ($users as $user) : ?>
-                                        <tr>
-                                            <td><?php echo $user['fullname'] ?></td>
-                                            <td><?php echo $user['email'] ?></td>
-                                            <td><?php echo $user['contact'] ?></td>
-                                            <td>
-                                                <?php echo $user['purok'] ?>
-                                                <?php echo $user['barangay'] ?>
-                                                <?php echo $user['municipality'] ?>
-                                                <?php echo $user['province'] ?>
-                                            </td>
-                                            <td><?php echo $user['is_verified'] ?></td>
-                                            <td><?php echo $user['created_at'] ?></td>
-                                            <td><?php echo $user['updated_at'] ?></td>
-                                            <td>
-                                                <a href="update_users.php?id=<?php echo $user['id']; ?>"> <i class="fa fa-edit"></i></a>
-                                                <a href="javascript:void(0);" data-toggle="modal" data-target="#deleteUserModal" onclick="setUserId(<?php echo $user['id']; ?>)">
-                                                    <i class="fa fa-trash"></i>
-                                                </a>
+                                            <tr>
+                                                <td><?php echo $user['fullname'] ?></td>
+                                                <td><?php echo $user['email'] ?></td>
+                                                <td><?php echo $user['contact'] ?></td>
+                                                <td>
+                                                    <?php echo $user['purok'] ?>
+                                                    <?php echo $user['barangay'] ?>
+                                                    <?php echo $user['municipality'] ?>
+                                                    <?php echo $user['province'] ?>
+                                                </td>
+                                                <td><?php echo $user['is_verified'] ?></td>
+                                                <td><?php echo $user['created_at'] ?></td>
+                                                <td><?php echo $user['updated_at'] ?></td>
+                                                <td>
+                                                    <div style="display: flex !important; justify-content: end; gap: 10px;">
+                                                        <a class="btn btn-warning" href="update_users.php?id=<?php echo $user['id']; ?>">UPDATE <i class="fa fa-edit"></i></a>
+                                                        <a class="btn btn-danger" href="javascript:void(0);" data-toggle="modal" data-target="#deleteUserModal" onclick="setUserId(<?php echo $user['id']; ?>)">
+                                                            DELETE <i class="fa fa-trash"></i>
+                                                        </a>
+                                                    </div>
 
 
-                                                <!-- DELETE USER MODAL -->
-                                                <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-                                                    <div class="modal-dialog" role="document">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
-                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                Are you sure you want to delete this user?
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <form id="deleteUserForm" method="POST" action="delete_users.php">
-                                                                    <input type="hidden" name="id" id="user_id_delete">
-                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                                                </form>
+
+                                                    <!-- DELETE USER MODAL -->
+                                                    <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="deleteUserModalLabel">Confirm Deletion</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    Are you sure you want to delete this user?
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <form id="deleteUserForm" method="POST" action="delete_users.php">
+                                                                        <input type="hidden" name="id" id="user_id_delete">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                                    </form>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                </td>
+                                            </tr>
                                         <?php endforeach ?>
                                     </tbody>
                                 </table>

@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="home.php"><img style="height: 50px; width: 50px; border-radius: 50%;"
                     src="assets/images/login/crisis.jpg" alt=""> Crisis Management
@@ -303,12 +303,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-md-12 text-end mt-2 mb-2">
                 <button type="submit" class="btn btn-primary">Update Report</button>
                 <a href="view_history.php?id=<?= $incidentId; ?>" class="btn btn-secondary">Cancel</a>
-                </div>
+            </div>
         </form>
     </div>
 
-        <!-- Bootstrap JS -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <!-- Swiper JS -->
@@ -346,9 +346,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        var marker = L.marker([<?= $incident['latitude']; ?>, <?= $incident['longitude']; ?>], { draggable: true }).addTo(map);
+        var marker = L.marker([<?= $incident['latitude']; ?>, <?= $incident['longitude']; ?>], {
+            draggable: true
+        }).addTo(map);
 
-        map.on('click', function (e) {
+        map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lon = e.latlng.lng;
 
@@ -366,7 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 });
         });
 
-        marker.on('dragend', function (e) {
+        marker.on('dragend', function(e) {
             var lat = e.target.getLatLng().lat;
             var lon = e.target.getLatLng().lng;
 

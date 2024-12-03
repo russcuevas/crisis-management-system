@@ -23,7 +23,7 @@ $total_users = $result_total_users['total_users'];
 // END GET TOTAL USERS
 
 // GET THE TOTAL INCIDENTS PENDING
-$get_total_incidents_pending = "SELECT COUNT(*) AS total_incidents_pending FROM `tbl_incidents` WHERE status = 'Requesting'";
+$get_total_incidents_pending = "SELECT COUNT(*) AS total_incidents_pending FROM `tbl_incidents` WHERE status = 'Pending'";
 $stmt_total_incidents_pending = $conn->prepare($get_total_incidents_pending);
 $stmt_total_incidents_pending->execute();
 $restult_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
