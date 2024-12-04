@@ -353,7 +353,7 @@ if ($incident_id) {
         if (latitude && longitude) {
             var marker = L.marker([latitude, longitude]).addTo(map)
                 .bindPopup('<b><?php echo $incident['incident_type']; ?></b><br>' +
-                    'Location: <?php echo $incident['incident_location']; ?><br>' +
+                    'Location: <?php echo $incident['incident_location_map']; ?><br>' +
                     'Status: <?php echo $incident['status']; ?>');
             map.setView([latitude, longitude], 18);
         } else {

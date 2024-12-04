@@ -7,6 +7,8 @@ if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
+
+//view incidents
 if (isset($_GET['incident_id'])) {
     $incident_id = $_GET['incident_id'];
 
@@ -21,16 +23,57 @@ if (isset($_GET['incident_id'])) {
     $incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$incident) {
-        $_SESSION['users_error'] = "Incidents Not Found";
-        header('location:users.php');
+        $_SESSION['pending_success'] = "Incidents Not Found";
+        header('location:pending_complain.php');
         exit();
     }
 } else {
-    $_SESSION['users_error'] = "Incidents Not Found";
-    header('location:users.php');
+    $_SESSION['pending_success'] = "Incidents Not Found";
+    header('location:pending_complain.php');
     exit();
 }
+
+//decode the image from json format
 $incident_proof = json_decode($incident['incident_proof'], true);
+
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    //update incidents to approved
+    if (isset($_POST['approve'])) {
+        $sql = "UPDATE tbl_incidents SET status = 'Approved' WHERE incident_id = :incident_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $_SESSION['pending_success'] = 'Incident approved successfully.';
+        header("Location: pending_complain.php");
+        exit();
+    }
+
+    //delete the incidents
+    if (isset($_POST['delete'])) {
+        $incident_proof = json_decode($incident['incident_proof'], true);
+
+        $sql = "DELETE FROM tbl_incidents WHERE incident_id = :incident_id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        if ($incident_proof && is_array($incident_proof)) {
+            foreach ($incident_proof as $image) {
+                $image_path = "../assets/images/proofs/" . htmlspecialchars($image);
+                if (file_exists($image_path)) {
+                    unlink($image_path);
+                }
+            }
+        }
+
+        $_SESSION['pending_success'] = 'Incident deleted successfully.';
+        header("Location: pending_complain.php");
+        exit();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -305,6 +348,28 @@ $incident_proof = json_decode($incident['incident_proof'], true);
                 </ol>
             </div>
 
+            <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this incident?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <form method="POST" id="deleteForm" style="display:inline;">
+                                <button type="submit" name="delete" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Incident Details -->
             <div class="row clearfix">
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -375,15 +440,19 @@ $incident_proof = json_decode($incident['incident_proof'], true);
                                 </table>
                             </div>
                             <div style="display: flex !important; justify-content: end; gap: 10px;">
-                                <button type="submit" class="btn btn-success">Approved</button>
-                                <button type="submit" class="btn btn-danger">Delete</button>
-                                <a href="pending_complain.php" class="btn btn-primary">Go back</a>
+                                <form method="POST">
+                                    <button type="submit" name="approve" class="btn btn-success">Approve</button>
+                                    <!-- Trigger the confirmation modal for delete -->
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmDeleteModal">Delete</button>
+                                    <a href="pending_complain.php" class="btn btn-primary">Go back</a>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
     </section>
+
 
     <!-- Jquery Core Js -->
     <script src="plugins/jquery/jquery.min.js"></script>
