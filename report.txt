@@ -31,6 +31,7 @@ updated_at
 
 
 tbl_incedents
+incident_id
 user_id->foreign to tbl_users
 incident_type -> Fire, Flood, Earthquake, Accident, Theft, Others(Specify)
 incident_description

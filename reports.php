@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $landmark = $_POST['incident_landmark'] ?? '';
     $dateTime = $_POST['incident_datetime'] ?? '';
     $mapLocation = $_POST['incident_location_map'] ?? '';
-    
+
     $latitude = $_POST['incident_latitude'] ?? null;
     $longitude = $_POST['incident_longitude'] ?? null;
 
@@ -73,15 +73,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':status', $status);
 
     if ($stmt->execute()) {
-        $_SESSION['success'] = 'Reports successfully posted. Please wait for the approval of the admin';
-        header('Location: reports.php');
-        exit();
+        $incidentId = $conn->lastInsertId();
+
+        // add to notifications
+        $notificationQuery = "INSERT INTO tbl_notifications (incident_id, user_id, is_view) 
+                              VALUES (:incident_id, :user_id, 0)";
+        $notificationStmt = $conn->prepare($notificationQuery);
+        $notificationStmt->bindParam(':incident_id', $incidentId);
+        $notificationStmt->bindParam(':user_id', $user_id);
+
+        if ($notificationStmt->execute()) {
+            $_SESSION['success'] = 'Reports successfully posted. Please wait for the approval of the admin';
+            header('Location: reports.php');
+            exit();
+        } else {
+            $_SESSION['error'] = 'Error creating notification';
+            header('Location: reports.php');
+            exit();
+        }
     } else {
         $_SESSION['error'] = 'Reports failed to post';
         header('Location: reports.php');
         exit();
     }
 }
+
 
 ?>
 
@@ -135,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             color: red;
         }
 
-        #mapLocation-error{
+        #mapLocation-error {
             font-size: 15px;
             margin-top: 5px;
             font-weight: 900;
@@ -225,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
                         <?php endif; ?>
-                            <div class="form-group form-float">
+                        <div class="form-group form-float">
                             <label for="incident_type" style="color: #212529; font-weight: 600;">Type of Incident</label>
                             <div class="form-line">
                                 <select class="form-select" id="incident_type" name="incident_type" required>
@@ -235,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <option value="Accident">Accident</option>
                                     <option value="Theft">Theft</option>
                                     <option value="Others">Others (Specify)</option>
-                                </select>                          
+                                </select>
                             </div>
                         </div>
 
@@ -246,14 +262,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         </div>
 
-                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label for="incident_description" style="color: #212529; font-weight: 600;" class="form-label">Description</label>
                             <div class="form-line">
-                            <textarea name="incident_description" cols="30" rows="5" class="form-control no-resize" required="" aria-required="true" aria-invalid="true"></textarea>
+                                <textarea name="incident_description" cols="30" rows="5" class="form-control no-resize" required="" aria-required="true" aria-invalid="true"></textarea>
                             </div>
                         </div>
 
-                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Upload Supporting Picture</label>
                             <div class="form-line">
                                 <input class="form-control" type="file" id="incident_proof" name="incident_proof[]" multiple required>
@@ -265,24 +281,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label class="form-label">Selected Files:</label>
                         </div>
 
-                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Location</label>
                             <div class="form-line">
                                 <input type="text" class="form-control" id="incident_location" name="incident_location" required>
                             </div>
                         </div>
 
-                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Landmark (Optional)</label>
                             <div class="form-line">
-                            <input type="text" class="form-control" id="incident_landmark" name="incident_landmark">
+                                <input type="text" class="form-control" id="incident_landmark" name="incident_landmark">
                             </div>
                         </div>
 
-                            <div class="form-group form-float" style="margin-top: 30px !important;">
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Date and Time</label>
                             <div class="form-line">
-                            <input type="datetime-local" class="form-control" id="incident_datetime" name="incident_datetime" required>
+                                <input type="datetime-local" class="form-control" id="incident_datetime" name="incident_datetime" required>
                             </div>
                         </div>
                         <input type="hidden" id="incident_latitude" name="incident_latitude" value="">
@@ -366,73 +382,73 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- MAP AND DATE TIME -->
     <script>
-var map = L.map('map').setView([13.41, 122.56], 6);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+        var map = L.map('map').setView([13.41, 122.56], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-map.setMaxBounds([
-    [4.6, 116.9],
-    [21.4, 126.6]
-]);
+        map.setMaxBounds([
+            [4.6, 116.9],
+            [21.4, 126.6]
+        ]);
 
-var marker = L.marker([13.41, 122.56], {
-    draggable: true
-}).addTo(map);
+        var marker = L.marker([13.41, 122.56], {
+            draggable: true
+        }).addTo(map);
 
-// Capture latitude and longitude when the map is clicked
-map.on('click', function (e) {
-    var lat = e.latlng.lat;
-    var lon = e.latlng.lng;
+        // Capture latitude and longitude when the map is clicked
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lon = e.latlng.lng;
 
-    // Set the marker at the clicked location
-    marker.setLatLng([lat, lon]);
+            // Set the marker at the clicked location
+            marker.setLatLng([lat, lon]);
 
-    // Populate hidden input fields with latitude and longitude
-    document.getElementById('incident_latitude').value = lat;
-    document.getElementById('incident_longitude').value = lon;
+            // Populate hidden input fields with latitude and longitude
+            document.getElementById('incident_latitude').value = lat;
+            document.getElementById('incident_longitude').value = lon;
 
-    // Optionally, use reverse geocoding to get the place name
-    var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+            // Optionally, use reverse geocoding to get the place name
+            var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            var placeName = data.display_name || "Location not found";
-            document.getElementById('mapLocation').value = placeName; // Set place name in the input field
-        })
-        .catch(error => {
-            console.error("Error fetching place name:", error);
-            document.getElementById('mapLocation').value = "Location not found";
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    var placeName = data.display_name || "Location not found";
+                    document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+                })
+                .catch(error => {
+                    console.error("Error fetching place name:", error);
+                    document.getElementById('mapLocation').value = "Location not found";
+                });
         });
-});
 
-// Enable dragging of the marker
-marker.dragging.enable();
+        // Enable dragging of the marker
+        marker.dragging.enable();
 
-// Add a listener for marker drag end to update location
-marker.on('dragend', function (e) {
-    var lat = e.target.getLatLng().lat;
-    var lon = e.target.getLatLng().lng;
+        // Add a listener for marker drag end to update location
+        marker.on('dragend', function(e) {
+            var lat = e.target.getLatLng().lat;
+            var lon = e.target.getLatLng().lng;
 
-    // Update input fields with latitude and longitude
-    document.getElementById('incident_latitude').value = lat;
-    document.getElementById('incident_longitude').value = lon;
+            // Update input fields with latitude and longitude
+            document.getElementById('incident_latitude').value = lat;
+            document.getElementById('incident_longitude').value = lon;
 
-    // Use reverse geocoding to get the place name
-    var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+            // Use reverse geocoding to get the place name
+            var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
 
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            var placeName = data.display_name || "Location not found";
-            document.getElementById('mapLocation').value = placeName; // Set place name in the input field
-        })
-        .catch(error => {
-            console.error("Error fetching place name:", error);
-            document.getElementById('mapLocation').value = "Location not found";
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    var placeName = data.display_name || "Location not found";
+                    document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+                })
+                .catch(error => {
+                    console.error("Error fetching place name:", error);
+                    document.getElementById('mapLocation').value = "Location not found";
+                });
         });
-});
 
 
         function updateDateTime() {
