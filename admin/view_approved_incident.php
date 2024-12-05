@@ -61,6 +61,63 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 }
+
+// applicable to all page
+// fetching notifs
+$sql_notifications = "
+    SELECT 
+        tbl_notifications.id AS notification_id,
+        tbl_notifications.incident_id,
+        tbl_notifications.user_id AS notification_user_id,
+        tbl_notifications.is_view,
+        tbl_notifications.created_at AS notification_created_at,
+        tbl_notifications.notification_description,  -- Added notification_description
+        tbl_incidents.incident_type,
+        tbl_incidents.incident_description AS incident_description,
+        tbl_incidents.status AS incident_status,
+        tbl_users.id AS user_id,
+        tbl_users.fullname AS user_fullname,
+        tbl_users.email AS user_email,
+        tbl_users.profile_picture AS user_profile_picture
+    FROM tbl_notifications
+    LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
+    LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
+    WHERE tbl_notifications.is_view = 0  -- Get only unread notifications
+    ORDER BY tbl_notifications.created_at DESC
+";
+
+$notifications_bell = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+
+
+// function for time notifs
+function timeAgo($timestamp)
+{
+    $created_at = new DateTime($timestamp);
+    $now = new DateTime();
+    $interval = $now->diff($created_at);
+
+    if ($interval->y > 0) {
+        return $interval->y . " year" . ($interval->y > 1 ? "s" : "") . " ago";
+    } elseif ($interval->m > 0) {
+        return $interval->m . " month" . ($interval->m > 1 ? "s" : "") . " ago";
+    } elseif ($interval->d > 0) {
+        return $interval->d . " day" . ($interval->d > 1 ? "s" : "") . " ago";
+    } elseif ($interval->h > 0) {
+        return $interval->h . " hour" . ($interval->h > 1 ? "s" : "") . " ago";
+    } elseif ($interval->i > 0) {
+        return $interval->i . " minute" . ($interval->i > 1 ? "s" : "") . " ago";
+    } else {
+        return "Just now";
+    }
+}
+
+// query to notifications that is unread
+$sql_count_notifications = "SELECT COUNT(*) AS unread_count FROM tbl_notifications WHERE is_view = 0";
+$stmt_count_notifications = $conn->prepare($sql_count_notifications);
+$stmt_count_notifications->execute();
+$result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
+$unread_count = $result_count_notifications['unread_count'];
+//end applicable to all page
 ?>
 <!DOCTYPE html>
 <html>
@@ -141,55 +198,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
     <!-- Top Bar -->
-    <nav class="navbar">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
-                <a href="javascript:void(0);" class="bars"></a>
-                <a id="app-title" style="display:flex;align-items:center" class="navbar-brand" href="dashboard.php">
-                    <img id="bcas-logo" style="width:45px;display:inline;margin-right:10px; border-radius: 50px;" src="images/admin/crisis.jpg" />
-                    <span>CRISIS MANAGEMENT SYSTEM</span>
-                </a>
-            </div>
-            <div class="collapse navbar-collapse" id="navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <!-- Notifications -->
-                    <li class="dropdown">
-                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                            <i class="material-icons">notifications</i>
-                            <span class="label-count">1</span>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li class="header">NOTIFICATIONS</li>
-                            <li class="body">
-                                <ul class="menu">
-                                    <li>
-                                        <a href="javascript:void(0);">
-                                            <div class="icon-circle bg-light-green">
-                                                <i class="material-icons">pending</i>
-                                            </div>
-                                            <div class="menu-info">
-                                                <h4>12 new members joined</h4>
-                                                <p>
-                                                    <i class="material-icons">access_time</i> 14 mins ago
-                                                </p>
-                                            </div>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="footer">
-                                <a href="javascript:void(0);">View All Notifications</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <!-- #END# Notifications -->
-                    <li class="pull-right"><a href="javascript:void(0);" class="js-right-sidebar" data-close="true"><i class="material-icons">account_circle</i></a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!-- #Top Bar -->
+    <!-- TOP BAR -->
+    <?php include('top_bar.php')  ?>
+    <!-- END TOP BAR -->
     <section>
         <!-- Left Sidebar -->
         <aside id="leftsidebar" class="sidebar">

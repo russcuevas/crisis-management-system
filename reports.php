@@ -76,11 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $incidentId = $conn->lastInsertId();
 
         // add to notifications
-        $notificationQuery = "INSERT INTO tbl_notifications (incident_id, user_id, is_view) 
-                              VALUES (:incident_id, :user_id, 0)";
+        $notificationQuery = "INSERT INTO tbl_notifications (incident_id, user_id, is_view, notification_description) 
+                      VALUES (:incident_id, :user_id, 0, :notification_description)";
         $notificationStmt = $conn->prepare($notificationQuery);
         $notificationStmt->bindParam(':incident_id', $incidentId);
         $notificationStmt->bindParam(':user_id', $user_id);
+        $notificationStmt->bindParam(':notification_description', $notification_description);
+        $notification_description = "Requesting for approval";
 
         if ($notificationStmt->execute()) {
             $_SESSION['success'] = 'Reports successfully posted. Please wait for the approval of the admin';
