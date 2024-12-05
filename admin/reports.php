@@ -6,7 +6,33 @@ $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
+
+$month = isset($_GET['month']) ? $_GET['month'] : '';
+$year = isset($_GET['year']) ? $_GET['year'] : '';
+
+// Build the SQL query
+$sql = "SELECT tbl_reports.*, tbl_users.fullname 
+        FROM tbl_reports 
+        LEFT JOIN tbl_users ON tbl_reports.user_id = tbl_users.id";
+
+// Apply filtering if month or year is selected
+if ($month && $year) {
+    $sql .= " WHERE MONTH(tbl_reports.incident_datetime) = :month AND YEAR(tbl_reports.incident_datetime) = :year";
+}
+
+// Execute the query
+$stmt = $conn->prepare($sql);
+
+// Bind the parameters if filtering
+if ($month && $year) {
+    $stmt->bindParam(':month', $month, PDO::PARAM_STR);
+    $stmt->bindParam(':year', $year, PDO::PARAM_STR);
+}
+
+$stmt->execute();
+$complaints = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -273,40 +299,91 @@ if (!isset($admin_id)) {
                                 <div id="print-container">
                                     <button type="submit" class="btn bg-red waves-effect btn-sm">
                                         <i class="material-icons">print</i>
-                                        <span>Download for Print</span>
+                                        <span>DOWNLOAD FOR PRINT</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
+
                         <div class="body">
+                            <!-- Filtering Form -->
+                            <form method="GET" action="reports.php">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <select name="month" class="form-control" required>
+                                            <option value="">Select Month</option>
+                                            <option value="01" <?php if (isset($_GET['month']) && $_GET['month'] == '01') echo 'selected'; ?>>January</option>
+                                            <option value="02" <?php if (isset($_GET['month']) && $_GET['month'] == '02') echo 'selected'; ?>>February</option>
+                                            <option value="03" <?php if (isset($_GET['month']) && $_GET['month'] == '03') echo 'selected'; ?>>March</option>
+                                            <option value="04" <?php if (isset($_GET['month']) && $_GET['month'] == '04') echo 'selected'; ?>>April</option>
+                                            <option value="05" <?php if (isset($_GET['month']) && $_GET['month'] == '05') echo 'selected'; ?>>May</option>
+                                            <option value="06" <?php if (isset($_GET['month']) && $_GET['month'] == '06') echo 'selected'; ?>>June</option>
+                                            <option value="07" <?php if (isset($_GET['month']) && $_GET['month'] == '07') echo 'selected'; ?>>July</option>
+                                            <option value="08" <?php if (isset($_GET['month']) && $_GET['month'] == '08') echo 'selected'; ?>>August</option>
+                                            <option value="09" <?php if (isset($_GET['month']) && $_GET['month'] == '09') echo 'selected'; ?>>September</option>
+                                            <option value="10" <?php if (isset($_GET['month']) && $_GET['month'] == '10') echo 'selected'; ?>>October</option>
+                                            <option value="11" <?php if (isset($_GET['month']) && $_GET['month'] == '11') echo 'selected'; ?>>November</option>
+                                            <option value="12" <?php if (isset($_GET['month']) && $_GET['month'] == '12') echo 'selected'; ?>>December</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="year" class="form-control" required>
+                                            <option value="">Select Year</option>
+                                            <?php
+                                            $currentYear = date('Y');
+                                            for ($i = 2024; $i <= $currentYear; $i++) {
+                                                echo "<option value='$i'" . (isset($_GET['year']) && $_GET['year'] == $i ? ' selected' : '') . ">$i</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-flex justify-content-between">
+                                            <button type="submit" class="btn bg-red waves-effect btn-sm" style="width:48%;">FILTER
+                                                <i style="font-size: 15px;" class="material-icons">filter_alt</i>
+                                            </button>
+                                            <a href="reports.php" class="btn bg-grey waves-effect btn-sm" style="width:48%; text-align:center;">RESET
+                                                <i style="font-size: 15px;" class="material-icons">restart_alt</i>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+
+
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                                <table id="reportTable" class="table table-bordered table-striped table-hover js-basic-example dataTable">
                                     <thead>
                                         <tr>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
+                                            <th>Complainant</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Landmark</th>
+                                            <th>Date/Time</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                        </tr>
+                                        <?php foreach ($complaints as $complaint): ?>
+                                            <tr>
+                                                <td><?php echo $complaint['fullname'] ?></td>
+                                                <td><?php echo $complaint['incident_type'] ?></td>
+                                                <td><?php echo $complaint['incident_description'] ?></td>
+                                                <td><?php echo $complaint['incident_location_map'] ?></td>
+                                                <td><?php echo $complaint['incident_landmark'] ?></td>
+                                                <td><?php echo $complaint['incident_datetime'] ?></td>
+                                                <td style="color:green; font-weight: 900;"><?php echo $complaint['status'] ?></td>
+                                            </tr>
+                                        <?php endforeach ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
                     </div>
                 </div>
-            </div>
     </section>
 
     <!-- Jquery Core Js -->
@@ -362,6 +439,80 @@ if (!isset($admin_id)) {
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+
+    <!-- PRINT DATA IN THE SELECTED YEAR AND MONTH -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.26/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        document.getElementById('print-container').addEventListener('click', function() {
+            const {
+                jsPDF
+            } = window.jspdf;
+            const doc = new jsPDF();
+
+            const selectedMonth = document.querySelector('[name="month"]').value;
+            const selectedYear = document.querySelector('[name="year"]').value;
+
+            const months = [
+                "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
+            ];
+
+            let reportText = '';
+            if (selectedMonth && selectedYear) {
+                const monthName = months[selectedMonth];
+                reportText = `Report for ${monthName} ${selectedYear}`;
+            } else {
+                reportText = 'Report for All Years and All Months';
+            }
+
+            const logoWidth = 25;
+            const logoHeight = 25;
+            const logoX = (doc.internal.pageSize.width - logoWidth) / 2;
+            const logoY = 10;
+            doc.addImage('images/admin/crisis.jpg', 'JPEG', logoX, logoY, logoWidth, logoHeight);
+
+            doc.setFontSize(20);
+            const title = "Crisis Management System";
+            const titleWidth = doc.getTextWidth(title);
+            const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
+            doc.text(title, titleX, logoY + logoHeight + 5);
+
+            doc.setFontSize(16);
+            const reportTextWidth = doc.getTextWidth(reportText);
+            const reportTextX = (doc.internal.pageSize.width - reportTextWidth) / 2;
+            doc.text(reportText, reportTextX, logoY + logoHeight + 15);
+
+            const reportTextBottomMargin = 10;
+            const spaceBeforeTable = logoY + logoHeight + 25 + reportTextBottomMargin;
+
+            const table = document.getElementById('reportTable');
+            doc.autoTable({
+                html: table,
+                startY: spaceBeforeTable,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: '#bc1823',
+                    textColor: '#ffffff',
+                    fontSize: 10,
+                },
+                styles: {
+                    fontSize: 10,
+                }
+            });
+
+            doc.save('report-summary.pdf');
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
 </body>
 
 </html>
