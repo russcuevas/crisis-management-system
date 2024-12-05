@@ -363,7 +363,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                                                     </button>
                                                                 </div>
                                                                 <div class="modal-body">
-                                                                    Are you sure you want to delete this user?
+                                                                    Are you sure you want to delete this user? all records will also deleted
                                                                 </div>
                                                                 <div class="modal-footer">
                                                                     <form id="deleteUserForm" method="POST" action="delete_users.php">
