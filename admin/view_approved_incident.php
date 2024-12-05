@@ -422,7 +422,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     </tr>
                                     <tr>
                                         <th>Status</th>
-                                        <td style="color: green;"><?php echo htmlspecialchars($incident['status']); ?></td>
+                                        <td style="color: green; font-weight: 900;"><?php echo htmlspecialchars($incident['status']); ?></td>
                                     </tr>
                                 </table>
                             </div>
