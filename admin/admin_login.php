@@ -24,7 +24,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
             $_SESSION['error_message'] = "Invalid password!";
         }
     } else {
-        $_SESSION['error_message'] = "No user found with that email address!";
+        $_SESSION['error_message'] = "Invalid password!";
     }
 }
 ?>

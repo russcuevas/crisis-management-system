@@ -197,7 +197,7 @@ $unread_count = $result_count_notifications['unread_count'];
                             </li>
                             <li>
                                 <a href="approve_complain.php">
-                                    <span>Approve</span>
+                                    <span>Approved</span>
                                 </a>
                             </li>
                         </ul>
@@ -234,7 +234,7 @@ $unread_count = $result_count_notifications['unread_count'];
                 <div role="tabpanel" id="skins">
                     <ul style="list-style-type: none;">
                         <li>
-                            <a href="" data-toggle="modal" data-target="#changePasswordModal" style="margin-top: 15px; margin-left: -30px; display: inline-block; font-weight: 900; font-size: 15px; text-decoration: none; cursor: pointer; color: black"><i class="material-icons mr-2" style="font-size: 18px; vertical-align: middle;">lock</i> Change password</a>
+                            <a href="change_details.php" style="margin-top: 15px; margin-left: -30px; display: inline-block; font-weight: 900; font-size: 15px; text-decoration: none; cursor: pointer; color: black"><i class="material-icons mr-2" style="font-size: 18px; vertical-align: middle;">lock</i> Change password</a>
                         </li>
                     </ul>
                     <ul style="list-style-type: none;">

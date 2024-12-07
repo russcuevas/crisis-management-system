@@ -1,64 +1,63 @@
 <?php
+session_start();
 include '../database/connection.php';
 
-session_start();
+// Ensure the user is logged in
 $admin_id = $_SESSION['admin_id'];
 if (!isset($admin_id)) {
     header('location:admin_login.php');
-}
-
-if (isset($_GET['id'])) {
-    $user_id = $_GET['id'];
-    $get_user = "SELECT * FROM `tbl_users` WHERE `id` = :id";
-    $stmt = $conn->prepare($get_user);
-    $stmt->bindParam(':id', $user_id);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$user) {
-        $_SESSION['users_error'] = "User ID Not Found";
-        header('location:users.php');
-        exit();
-    }
-} else {
-    $_SESSION['users_error'] = "User ID Not Found";
-    header('location:users.php');
     exit();
 }
 
-// update function
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fullname = $_POST['fullname'];
-    $email = $_POST['email'];
-    $contact = $_POST['contact'];
-    $purok = $_POST['purok'];
-    $barangay = $_POST['barangay'];
-    $municipality = $_POST['municipality'];
-    $province = $_POST['province'];
-    $is_verified = $_POST['is_verified'];
+// query change password
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['change-password'])) {
+        $old_password = $_POST['old_password'];
+        $new_password = $_POST['password'];
+        $confirm_password = $_POST['password_confirmation'];
 
-    $update_user = "UPDATE `tbl_users` 
-                    SET `fullname` = :fullname, `email` = :email, `contact` = :contact, 
-                        `purok` = :purok, `barangay` = :barangay, 
-                        `municipality` = :municipality, `province` = :province, `is_verified` = :is_verified 
-                    WHERE `id` = :id";
+        $hashed_old_password = sha1($old_password);
+        $hashed_new_password = sha1($new_password);
+        $hashed_confirm_password = sha1($confirm_password);
 
-    $stmt = $conn->prepare($update_user);
-    $stmt->bindParam(':fullname', $fullname);
-    $stmt->bindParam(':email', $email);
-    $stmt->bindParam(':contact', $contact);
-    $stmt->bindParam(':purok', $purok);
-    $stmt->bindParam(':barangay', $barangay);
-    $stmt->bindParam(':municipality', $municipality);
-    $stmt->bindParam(':province', $province);
-    $stmt->bindParam(':is_verified', $is_verified);
-    $stmt->bindParam(':id', $user_id);
+        if ($hashed_new_password !== $hashed_confirm_password) {
+            $_SESSION['change_errors'] = 'New password and confirm password do not match.';
+            header('Location: change_details.php');
+            exit();
+        }
 
-    if ($stmt->execute()) {
-        $_SESSION['users_success'] = "User information has been updated successfully!";
-        header('Location: users.php');
-        exit();
-    } else {
-        $_SESSION['users_error'] = "Failed to update user information.";
+        $sql = "SELECT password FROM tbl_admin WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $admin_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result === false) {
+            $_SESSION['change_errors'] = 'Error updating password.';
+            header('Location: change_details.php');
+            exit();
+        }
+
+        if ($hashed_old_password !== $result['password']) {
+            $_SESSION['change_errors'] = 'Old password is incorrect';
+            header('Location: change_details.php');
+            exit();
+        }
+
+        $update_sql = "UPDATE tbl_admin SET password = :new_password WHERE id = :id";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bindParam(':new_password', $hashed_new_password, PDO::PARAM_STR);
+        $update_stmt->bindParam(':id', $admin_id, PDO::PARAM_INT);
+
+        if ($update_stmt->execute()) {
+            $_SESSION['change_success'] = 'Password updated successfully.';
+            header('Location: change_details.php');
+            exit();
+        } else {
+            $_SESSION['change_errors'] = 'Error updating password.';
+            header('Location: change_details.php');
+            exit();
+        }
     }
 }
 
@@ -118,6 +117,7 @@ $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
 //end applicable to all page
+
 ?>
 
 <!DOCTYPE html>
@@ -137,8 +137,7 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Bootstrap Core Css -->
     <link href="plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <!-- Bootstrap Select Css -->
-    <link href="plugins/bootstrap-select/css/bootstrap-select.css" rel="stylesheet" />
+
     <!-- Waves Effect Css -->
     <link href="plugins/node-waves/waves.css" rel="stylesheet" />
 
@@ -157,11 +156,7 @@ $unread_count = $result_count_notifications['unread_count'];
         integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        .align-right {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
+
     </style>
 </head>
 
@@ -201,7 +196,7 @@ $unread_count = $result_count_notifications['unread_count'];
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="users.php">
                             <i class="material-icons">groups</i>
                             <span>Users</span>
@@ -277,20 +272,16 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
         </aside>
-
-
-
-        <!-- #END# Right Sidebar -->
     </section>
 
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="users.php"><i style="font-size: 20px;" class="material-icons">groups</i>
-                            Users Management</a></li>
+                    <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">groups</i>
+                            Dashboard</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">edit</i>
-                        Update User
+                        Change details
                     </li>
                 </ol>
             </div>
@@ -298,71 +289,54 @@ $unread_count = $result_count_notifications['unread_count'];
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
-                            <h2>Update User Information</h2>
+                            <h2>Update password</h2>
                         </div>
                         <div class="body">
-                            <form id="form_validation" method="POST">
-                                <div class="form-group form-float">
-                                    <label class="form-label">Fullname</label>
-                                    <div class="form-line">
-                                        <input type="text" class="form-control" name="fullname" value="<?php echo $user['fullname']; ?>" required>
-                                    </div>
+
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['change_success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['change_success']; ?>
+                                    <?php unset($_SESSION['change_success']);
+                                    ?>
                                 </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['change_errors'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['change_errors']; ?>
+                                    <?php unset($_SESSION['change_errors']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form id="form_validation" method="POST" action="">
                                 <div class="form-group form-float">
-                                    <label class="form-label">Email</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Old Password</label>
                                     <div class="form-line">
-                                        <input type="email" class="form-control" name="email" value="<?php echo $user['email']; ?>" required>
+                                        <input type="password" class="form-control" name="old_password" required>
                                     </div>
+                                    <div id="error-old_password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
                                 </div>
 
                                 <div class="form-group form-float">
-                                    <label class="form-label">Contact</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">New Password</label>
                                     <div class="form-line">
-                                        <input type="text" class="form-control" name="contact" value="<?php echo $user['contact']; ?>" required>
+                                        <input type="password" class="form-control" name="password" maxlength="12" minlength="6" required>
                                     </div>
-                                </div>
-
-                                <!-- Address Fields -->
-                                <div class="form-group form-float">
-                                    <label class="form-label">Purok</label>
-                                    <div class="form-line">
-                                        <input type="text" class="form-control" name="purok" value="<?php echo $user['purok']; ?>" required>
-                                    </div>
+                                    <div id="error-password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
                                 </div>
 
                                 <div class="form-group form-float">
-                                    <label class="form-label">Barangay</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Confirm Password</label>
                                     <div class="form-line">
-                                        <input type="text" class="form-control" name="barangay" value="<?php echo $user['barangay']; ?>" required>
+                                        <input type="password" class="form-control" name="password_confirmation" maxlength="12" minlength="6" required>
                                     </div>
-                                </div>
-
-                                <div class="form-group form-float">
-                                    <label class="form-label">Municipality</label>
-                                    <div class="form-line">
-                                        <input type="text" class="form-control" name="municipality" value="<?php echo $user['municipality']; ?>" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group form-float">
-                                    <label class="form-label">Province</label>
-                                    <div class="form-line">
-                                        <input type="text" class="form-control" name="province" value="<?php echo $user['province']; ?>" required>
-                                    </div>
-                                </div>
-
-                                <div class="form-group form-float">
-                                    <label class="form-label">Verification Status</label>
-                                    <div class="form-line">
-                                        <select name="is_verified" class="form-control" required>
-                                            <option value="1" <?php echo $user['is_verified'] == 1 ? 'selected' : ''; ?>>Verified</option>
-                                            <option value="0" <?php echo $user['is_verified'] == 0 ? 'selected' : ''; ?>>Not Verified</option>
-                                        </select>
-                                    </div>
+                                    <div id="error-password_confirmation" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
                                 </div>
 
                                 <div class="align-right">
-                                    <button type="submit" class="btn bg-red waves-effect">Save Changes</button>
+                                    <button type="submit" name="change-password" class="btn bg-red waves-effect">Save Changes</button>
                                     <a href="users.php" class="btn btn-link waves-effect">Cancel</a>
                                 </div>
                             </form>
@@ -379,30 +353,55 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Bootstrap Core Js -->
     <script src="plugins/bootstrap/js/bootstrap.js"></script>
 
-    <!-- Select Plugin Js -->
-    <script src="plugins/bootstrap-select/js/bootstrap-select.js"></script>
-
     <!-- Slimscroll Plugin Js -->
     <script src="plugins/jquery-slimscroll/jquery.slimscroll.js"></script>
 
     <!-- Jquery Validation Plugin Css -->
     <script src="plugins/jquery-validation/jquery.validate.js"></script>
-
-    <!-- JQuery Steps Plugin Js -->
-    <script src="plugins/jquery-steps/jquery.steps.js"></script>
-
-    <!-- Sweet Alert Plugin Js -->
-    <script src="plugins/sweetalert/sweetalert.min.js"></script>
+    <script src="js/pages/forms/form-validation.js"></script>
 
     <!-- Waves Effect Plugin Js -->
     <script src="plugins/node-waves/waves.js"></script>
 
+    <!-- Jquery CountTo Plugin Js -->
+    <script src="plugins/jquery-countto/jquery.countTo.js"></script>
+
+    <!-- Morris Plugin Js -->
+    <script src="plugins/raphael/raphael.min.js"></script>
+    <script src="plugins/morrisjs/morris.js"></script>
+
+    <!-- ChartJs -->
+    <script src="plugins/chartjs/Chart.bundle.js"></script>
+
+    <!-- Flot Charts Plugin Js -->
+    <script src="plugins/flot-charts/jquery.flot.js"></script>
+    <script src="plugins/flot-charts/jquery.flot.resize.js"></script>
+    <script src="plugins/flot-charts/jquery.flot.pie.js"></script>
+    <script src="plugins/flot-charts/jquery.flot.categories.js"></script>
+    <script src="plugins/flot-charts/jquery.flot.time.js"></script>
+
+    <!-- Sparkline Chart Plugin Js -->
+    <script src="plugins/jquery-sparkline/jquery.sparkline.js"></script>
+
+    <!-- Datatable -->
+    <script src="plugins/jquery-datatable/jquery.dataTables.js"></script>
+    <script src="plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/buttons.flash.min.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/jszip.min.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/pdfmake.min.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/vfs_fonts.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/buttons.html5.min.js"></script>
+    <script src="plugins/jquery-datatable/extensions/export/buttons.print.min.js"></script>
+    <script src="js/pages/tables/jquery-datatable.js"></script>
     <!-- Custom Js -->
     <script src="js/admin.js"></script>
-    <script src="js/pages/forms/form-validation.js"></script>
+    <script src="js/pages/index.js"></script>
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+
+
 </body>
 
 </html>
