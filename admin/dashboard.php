@@ -39,6 +39,18 @@ $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 // END GET PENDING COMPLAINTS
 
 
+// Fetch fire incidents grouped by month
+$query = "SELECT MONTH(created_at) AS month, COUNT(*) AS fire_incidents 
+          FROM tbl_reports 
+          WHERE incident_type = 'Fire'
+          GROUP BY MONTH(created_at)
+          ORDER BY MONTH(created_at)";
+
+// Prepare and execute the query
+$stmt = $conn->prepare($query);
+$stmt->execute();
+
+
 // applicable to all page
 // fetching notifs
 $sql_notifications = "
@@ -245,51 +257,6 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
         </aside>
-
-
-        <!-- CHANGE PASSWORD MODAL -->
-        <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-md" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="largeModalLabel">Change password</h4>
-                        <hr style="background-color: #bc1823; height: 2px; border: none;">
-                    </div>
-                    <div class="modal-body">
-                        <form id="form_advanced_validation" method="POST" action="">
-                            <div class="form-group form-float">
-                                <label style="color: #212529; font-weight: 600;" class="form-label">Old Password</label>
-                                <div class="form-line">
-                                    <input type="password" class="form-control" name="old_password" required>
-                                </div>
-                                <div id="error-old_password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
-                            </div>
-
-                            <div class="form-group form-float">
-                                <label style="color: #212529; font-weight: 600;" class="form-label">New Password</label>
-                                <div class="form-line">
-                                    <input type="password" class="form-control" name="password" maxlength="12" minlength="6" required>
-                                </div>
-                                <div id="error-password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
-                            </div>
-
-                            <div class="form-group form-float">
-                                <label style="color: #212529; font-weight: 600;" class="form-label">Confirm Password</label>
-                                <div class="form-line">
-                                    <input type="password" class="form-control" name="password_confirmation" maxlength="12" minlength="6" required>
-                                </div>
-                                <div id="error-password_confirmation" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
-                            </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn bg-red waves-effect">SAVE CHANGES</button>
-                        <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
-                    </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        </div>
         <!-- #END# Right Sidebar -->
     </section>
 
@@ -336,44 +303,161 @@ $unread_count = $result_count_notifications['unread_count'];
             </div>
 
             <!-- #END# Widgets -->
-            <!-- <div class="row clearfix">
-                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="row clearfix">
+                <!-- Bar Chart -->
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
-                            <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                PENDING COMPLAIN
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                FIRE INCIDENT YEARLY
                             </h2>
                         </div>
                         <div class="body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                            <th>Sample</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                            <td>Sample</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-gender" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-gender" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="fireIncident" height="200"></canvas>
+                            </form>
                         </div>
                     </div>
                 </div>
-            </div> -->
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                FLOOD INCIDENT YEARLY
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-flood" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-flood" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="floodIncident" height="200"></canvas>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- #END# Bar Chart -->
+            </div>
+
+            <div class="row clearfix">
+                <!-- Bar Chart -->
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                EARTHQUAKE INCIDENT YEARLY
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-earthquake" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-earthquake" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="earthquakeIncident" height="200"></canvas>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                ACCIDENT INCIDENT YEARLY
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-accident" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-accident" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="accidentIncident" height="200"></canvas>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #END# Bar Chart -->
+
+            <div class="row clearfix">
+                <!-- Bar Chart -->
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                THEFT INCIDENT YEARLY
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-theft" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-theft" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="theftIncident" height="200"></canvas>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
+                                OTHER CASE INCIDENT YEARLY
+                            </h2>
+                        </div>
+                        <div class="body">
+                            <form action="">
+                                <div class="form-group" style="display: flex; align-items: center;">
+                                    <label for="year-select-other" style="font-weight: 600; margin-right: 10px;">Year:</label>
+                                    <div class="form-line" style="width: 100px">
+                                        <select class="form-control show-tick" id="year-select-other" style="border: none; box-shadow: none;">
+                                            <option value="2024">2024</option>
+                                            <option value="2025">2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <canvas id="otherIncidents" height="200"></canvas>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- #END# Bar Chart -->
     </section>
+
+
 
     <!-- Jquery Core Js -->
     <script src="plugins/jquery/jquery.min.js"></script>
@@ -428,6 +512,151 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
+    <script>
+        function createChartAndFetchData(canvasId, selectId, incidentType) {
+            var incidentChart;
+            var currentYear = new Date().getFullYear();
+            var chartOptions = {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                }
+            };
+
+            function createChart(data) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+                incidentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: chartOptions
+                });
+            }
+
+            function fetchDataForYear(year) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', `fetch_incidents.php?year=${year}&incidentType=${incidentType}`, true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            var responseData = JSON.parse(xhr.responseText);
+                            if (responseData.data && responseData.labels) {
+                                incidentChart.data.labels = responseData.labels;
+                                incidentChart.data.datasets[0].data = responseData.data;
+                                incidentChart.data.datasets[0].label = `${incidentType} Incidents in ${year}`;
+                                incidentChart.update();
+                            } else {
+                                console.error('Invalid data received:', responseData);
+                            }
+                        } catch (error) {
+                            console.error('Error parsing response:', error);
+                        }
+                    } else {
+                        console.error('Failed to fetch data:', xhr.status);
+                    }
+                };
+                xhr.send();
+            }
+
+            var defaultData = {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [{
+                    label: `${incidentType} Incidents in ${currentYear}`,
+                    data: Array(12).fill(0),
+                    backgroundColor: '#bc1823',
+                    borderColor: '#bc1823',
+                    borderWidth: 1
+                }]
+            };
+
+            createChart(defaultData);
+            fetchDataForYear(currentYear);
+            document.getElementById(selectId).addEventListener('change', function() {
+                var selectedYear = this.value;
+                fetchDataForYear(selectedYear);
+            });
+        }
+
+        createChartAndFetchData('fireIncident', 'year-select-gender', 'Fire');
+        createChartAndFetchData('floodIncident', 'year-select-flood', 'Flood');
+        createChartAndFetchData('earthquakeIncident', 'year-select-earthquake', 'Earthquake');
+        createChartAndFetchData('accidentIncident', 'year-select-accident', 'Accident');
+        createChartAndFetchData('theftIncident', 'year-select-theft', 'Theft');
+    </script>
+
+    <script>
+        function createOtherIncidentsChart(canvasId, selectId) {
+            var incidentChart;
+            var currentYear = new Date().getFullYear();
+            var chartOptions = {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                }
+            };
+
+            function createChart(data) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+                incidentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: chartOptions
+                });
+            }
+
+            function fetchDataForYear(year) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', `fetch_other_incidents.php?year=${year}`, true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            var responseData = JSON.parse(xhr.responseText);
+                            if (responseData.data && responseData.labels) {
+                                incidentChart.data.labels = responseData.labels;
+                                incidentChart.data.datasets[0].data = responseData.data;
+                                incidentChart.data.datasets[0].label = `Other Incidents in ${year}`;
+                                incidentChart.update();
+                            } else {
+                                console.error('Invalid data received:', responseData);
+                            }
+                        } catch (error) {
+                            console.error('Error parsing response:', error);
+                        }
+                    } else {
+                        console.error('Failed to fetch data:', xhr.status);
+                    }
+                };
+                xhr.send();
+            }
+
+            var defaultData = {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                datasets: [{
+                    label: `Other Incidents in ${currentYear}`,
+                    data: Array(12).fill(0),
+                    backgroundColor: '#bc1823',
+                    borderColor: '#bc1823',
+                    borderWidth: 1
+                }]
+            };
+            createChart(defaultData);
+            fetchDataForYear(currentYear);
+            document.getElementById(selectId).addEventListener('change', function() {
+                var selectedYear = this.value;
+                fetchDataForYear(selectedYear);
+            });
+        }
+        createOtherIncidentsChart('otherIncidents', 'year-select-other');
+    </script>
 </body>
 
 </html>
