@@ -8,14 +8,16 @@ if (!isset($admin_id)) {
 }
 
 
+
+
 //view incidents
 if (isset($_GET['incident_id'])) {
     $incident_id = $_GET['incident_id'];
 
     $sql = "SELECT tbl_incidents.*, tbl_users.fullname 
-            FROM tbl_incidents 
-            LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-            WHERE tbl_incidents.incident_id = :incident_id";
+        FROM tbl_incidents 
+        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
+        WHERE tbl_incidents.incident_id = :incident_id";
 
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
@@ -23,7 +25,13 @@ if (isset($_GET['incident_id'])) {
     $incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$incident) {
-        $_SESSION['pending_errors'] = "Incidents Not Found";
+        $_SESSION['pending_errors'] = "Incident Not Found";
+        header('location:pending_complain.php');
+        exit();
+    }
+
+    if ($incident['status'] === 'Approved') {
+        $_SESSION['pending_errors'] = "This incident has already been approved";
         header('location:pending_complain.php');
         exit();
     }
@@ -156,7 +164,7 @@ $sql_notifications = "
     ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bell = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
 
 
 // function for time notifs

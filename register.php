@@ -26,7 +26,7 @@ function sendVerificationEmail($email, $code)
         $mail->isHTML(true);
         $mail->Subject = 'Email Verification Code';
 
-        $verification_link = "http://localhost/crisis-management/verify_account.php?email=" . urlencode($email) . "&code=" . $code;
+        $verification_link = "http://localhost/crisis-management-system/verify_account.php?email=" . urlencode($email) . "&code=" . $code;
 
         $mail->Body    = "Please click the following link to verify your email: <a href='$verification_link'>$verification_link</a>";
 
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <i class="material-icons">mail</i>
                                 </span>
                                 <div class="form-line">
-                                    <input type="email" class="form-control" name="email" placeholder="Email Address"
+                                    <input type="email" class="form-control" name="email" placeholder="Email Address (MUST VALID)"
                                         required>
                                 </div>
                             </div>

@@ -298,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
 
                         <div class="form-group form-float" style="margin-top: 30px !important;">
-                            <label style="color: #212529; font-weight: 600;" class="form-label">Date and Time</label>
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Incident Date and Time</label>
                             <div class="form-line">
                                 <input type="datetime-local" class="form-control" id="incident_datetime" name="incident_datetime" required>
                             </div>

@@ -121,6 +121,18 @@ footer a:hover {
     color: white;
 }
 
+.btn-custom {
+    background: linear-gradient(to right, #000000, #3c0f12) !important;
+    border-color: white !important;
+    color: white !important;
+}
+
+.btn-custom:hover {
+    background: linear-gradient(to right, #3c0f12, #000000) !important;
+    border-color: white !important;
+    color: white !important;
+}
+
 /* ABOUT US */
 .section-title {
     font-size: 1.8rem;

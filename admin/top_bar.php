@@ -21,7 +21,7 @@
                             <li class="header">NOTIFICATIONS</li>
                             <li class="body">
                                 <ul class="menu">
-                                    <?php if (empty($notifications_bell)): ?>
+                                    <?php if (empty($notifications_bells)): ?>
                                         <li>
                                             <div class="menu-info" style="margin-bottom: 20px; color: white;">
                                                 <h3 style="padding: 50px; background-color: black;">No notification</h3>
@@ -29,25 +29,28 @@
                                         </li>
                                     <?php else: ?>
                                         <?php foreach ($notifications_bells as $notifications_bell): ?>
-                                            <li>
-                                                <a href="mark_as_viewed.php?incident_id=<?php echo $notifications_bell['incident_id']; ?>">
-                                                    <div class="icon-circle bg-light-green">
-                                                        <i class="material-icons">pending</i>
-                                                    </div>
-                                                    <div class="menu-info">
-                                                        <strong style="font-size: 10px"><?php echo htmlspecialchars($notifications_bell['notification_description']); ?></strong>
-                                                        <h4><?php echo htmlspecialchars($notifications_bell['incident_type']); ?></h4>
-                                                        <p>
-                                                            <i class="material-icons">access_time</i>
-                                                            <span class="time-ago" data-time="<?php echo $notifications_bell['notification_created_at']; ?>">
-                                                                <?php echo timeAgo($notifications_bell['notification_created_at']); ?>
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                </a>
-                                            </li>
+                                            <?php if ($notifications_bell['incident_status'] === 'Pending'): ?>
+                                                <li>
+                                                    <a href="mark_as_viewed.php?incident_id=<?php echo $notifications_bell['incident_id']; ?>">
+                                                        <div class="icon-circle bg-light-green">
+                                                            <i class="material-icons">pending</i>
+                                                        </div>
+                                                        <div class="menu-info">
+                                                            <strong style="font-size: 10px"><?php echo htmlspecialchars($notifications_bell['notification_description']); ?></strong>
+                                                            <h4><?php echo htmlspecialchars($notifications_bell['incident_type']); ?></h4>
+                                                            <p>
+                                                                <i class="material-icons">access_time</i>
+                                                                <span class="time-ago" data-time="<?php echo $notifications_bell['notification_created_at']; ?>">
+                                                                    <?php echo timeAgo($notifications_bell['notification_created_at']); ?>
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
+
 
                                 </ul>
                             </li>

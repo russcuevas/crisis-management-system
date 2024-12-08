@@ -61,7 +61,7 @@ $sql_notifications = "
     ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bell = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
 
 
 // function for time notifs

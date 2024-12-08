@@ -2,23 +2,28 @@
 session_start();
 include('database/connection.php');
 
+$items_per_page = 3;
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
 $is_logged_in = isset($_SESSION['user_id']);
 $user_id = $_SESSION['user_id'] ?? null;
 
-if ($is_logged_in) {
-    $query = "SELECT i.*, u.fullname FROM tbl_incidents i
-              LEFT JOIN tbl_users u ON i.user_id = u.id
-              WHERE i.status = 'Approved' 
-              ORDER BY i.created_at DESC";
-    $stmt = $conn->prepare($query);
-} else {
-    $query = "SELECT i.*, u.fullname FROM tbl_incidents i
-              LEFT JOIN tbl_users u ON i.user_id = u.id
-              WHERE i.status = 'Approved'
-              ORDER BY i.created_at DESC";
-    $stmt = $conn->prepare($query);
-}
+$query_count = "SELECT COUNT(*) FROM tbl_incidents WHERE status = 'Approved'";
+$stmt_count = $conn->prepare($query_count);
+$stmt_count->execute();
+$total_incidents = $stmt_count->fetchColumn();
 
+$total_pages = ceil($total_incidents / $items_per_page);
+
+$query = "SELECT i.*, u.fullname FROM tbl_incidents i
+          LEFT JOIN tbl_users u ON i.user_id = u.id
+          WHERE i.status = 'Approved'
+          ORDER BY i.created_at DESC
+          LIMIT :offset, :items_per_page";
+$stmt = $conn->prepare($query);
+$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindParam(':items_per_page', $items_per_page, PDO::PARAM_INT);
 $stmt->execute();
 $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -78,6 +83,29 @@ function timeAgo($timestamp)
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
+        }
+
+        .pagination {
+            justify-content: center;
+        }
+
+        .pagination .page-link {
+            color: #000000;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #bc1823;
+            border-color: #bc1823;
+            color: white;
+        }
+
+        .pagination .page-link:hover {
+            color: #bc1823;
+        }
+
+        .no-posts-container {
+            text-align: center;
+            padding: 30px;
         }
     </style>
 </head>
@@ -142,16 +170,14 @@ function timeAgo($timestamp)
         <?php if (empty($incidents)): ?>
             <div class="no-posts-container">
                 <div class="no-posts-box">
-                    No post incidents available stay updated.
+                    No post incidents available, stay updated.
                 </div>
             </div>
-
         <?php else: ?>
             <div class="row">
                 <?php foreach ($incidents as $incident): ?>
                     <div class="col-12 col-md-6 col-lg-4 mb-4">
                         <div class="card news-feed">
-
                             <?php if ($is_logged_in && $incident['user_id'] == $user_id): ?>
                                 <div class="badge badge-primary" style="position: absolute; top: 10px; right: 10px; z-index: 10; background-color: #007bff; color: white; padding: 5px 10px; font-size: 14px;">
                                     My Post
@@ -184,7 +210,7 @@ function timeAgo($timestamp)
                                 <p><strong>Landmark - </strong> <?php echo htmlspecialchars($incident['incident_landmark']); ?></p>
                                 <p><strong>Date and Time - </strong> <?php echo htmlspecialchars($incident['incident_datetime']); ?></p>
 
-                                <a href="view_full_information.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-primary">VIEW FULL INFORMATION</a>
+                                <a href="view_full_information.php?id=<?php echo $incident['incident_id']; ?>" class="btn btn-primary btn-custom">VIEW FULL INFORMATION</a>
                             </div>
 
                             <div class="card-footer">
@@ -194,11 +220,52 @@ function timeAgo($timestamp)
                                     <?php echo timeAgo($incident['created_at']); ?>
                                 </span>
                             </div>
-
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center my-4">
+                <ul class="pagination">
+                    <?php if ($current_page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?php echo $current_page - 1; ?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($page = 1; $page <= $total_pages; $page++): ?>
+                        <li class="page-item <?php echo $page == $current_page ? 'active' : ''; ?>">
+                            <a class="page-link" href="?page=<?php echo $page; ?>">
+                                <?php echo $page; ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($current_page < $total_pages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?php echo $current_page + 1; ?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <?php else: ?>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+
         <?php endif; ?>
     </div>
 

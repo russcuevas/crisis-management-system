@@ -27,6 +27,12 @@ if (isset($_GET['incident_id'])) {
         header('location:approve_complain.php');
         exit();
     }
+
+    if ($incident['status'] === 'Pending') {
+        $_SESSION['approve_error'] = "This incident has not been approved";
+        header('location:approve_complain.php');
+        exit();
+    }
 } else {
     $_SESSION['approve_success'] = "Incidents Not Found";
     header('location:approve_complain.php');
@@ -86,7 +92,7 @@ $sql_notifications = "
     ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bell = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
 
 
 // function for time notifs

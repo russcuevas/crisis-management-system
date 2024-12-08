@@ -29,12 +29,18 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                 exit();
             } else {
                 $_SESSION['error_message'] = "Your account is not verified! check your email";
+                header('Location: login.php');
+                exit();
             }
         } else {
             $_SESSION['error_message'] = "Invalid email or password!";
+            header('Location: login.php');
+            exit();
         }
     } else {
         $_SESSION['error_message'] = "Invalid email or password!";
+        header('Location: login.php');
+        exit();
     }
 }
 ?>
