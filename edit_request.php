@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="home.php">Home</a>
+                        <a class="nav-link" href="home.php">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="about.php">About Us</a>
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="reportsDropdown">
                             <li><a class="dropdown-item" href="reports.php">Post Complain</a></li>
-                            <li><a class="dropdown-item" href="history.php">View History</a></li>
+                            <li><a class="dropdown-item active" href="history.php">View History</a></li>
 
                         </ul>
                     </li>
