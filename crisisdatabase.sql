@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 03, 2024 at 06:46 AM
+-- Generation Time: Dec 08, 2024 at 02:57 PM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -40,7 +40,7 @@ CREATE TABLE `tbl_admin` (
 --
 
 INSERT INTO `tbl_admin` (`id`, `email`, `password`, `created_at`, `updated_at`) VALUES
-(2, 'russelcuevas0@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', '2024-12-01 10:47:54', '2024-12-01 10:47:54');
+(3, 'admin@gmail.com', 'fc1c7b65ab0906b2a9c240e56d7ec96f5dee92f7', '2024-12-08 13:53:51', '2024-12-08 13:53:51');
 
 -- --------------------------------------------------------
 
@@ -84,6 +84,44 @@ CREATE TABLE `tbl_incidents` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tbl_notifications`
+--
+
+CREATE TABLE `tbl_notifications` (
+  `id` int(11) NOT NULL,
+  `incident_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `notification_description` text DEFAULT NULL,
+  `is_view` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_reports`
+--
+
+CREATE TABLE `tbl_reports` (
+  `report_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `incident_type` varchar(255) DEFAULT NULL,
+  `incident_description` text DEFAULT NULL,
+  `incident_location` varchar(255) DEFAULT NULL,
+  `incident_landmark` varchar(255) DEFAULT NULL,
+  `incident_datetime` datetime DEFAULT NULL,
+  `incident_location_map` varchar(255) DEFAULT NULL,
+  `status` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `latitude` double DEFAULT NULL,
+  `longitude` double DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tbl_users`
 --
 
@@ -103,14 +141,6 @@ CREATE TABLE `tbl_users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tbl_users`
---
-
-INSERT INTO `tbl_users` (`id`, `profile_picture`, `email`, `password`, `fullname`, `contact`, `purok`, `barangay`, `municipality`, `province`, `is_verified`, `code`, `created_at`, `updated_at`) VALUES
-(12, 'IMG_0884.jpeg', 'russelcuevas0@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent C. Cuevas', '09495748302', '4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2024-12-01 18:59:41', '2024-12-01 19:48:00'),
-(13, NULL, 'russelcuevas00@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent Cuevas 2', '09495748302', '4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2024-12-02 15:25:52', '2024-12-02 15:25:52');
 
 --
 -- Indexes for dumped tables
@@ -137,6 +167,21 @@ ALTER TABLE `tbl_incidents`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `tbl_notifications`
+--
+ALTER TABLE `tbl_notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `incident_id` (`incident_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `tbl_reports`
+--
+ALTER TABLE `tbl_reports`
+  ADD PRIMARY KEY (`report_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
@@ -151,25 +196,37 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_admin`
 --
 ALTER TABLE `tbl_admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tbl_feedback`
 --
 ALTER TABLE `tbl_feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `tbl_incidents`
 --
 ALTER TABLE `tbl_incidents`
-  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+
+--
+-- AUTO_INCREMENT for table `tbl_notifications`
+--
+ALTER TABLE `tbl_notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `tbl_reports`
+--
+ALTER TABLE `tbl_reports`
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Constraints for dumped tables
@@ -180,6 +237,19 @@ ALTER TABLE `tbl_users`
 --
 ALTER TABLE `tbl_incidents`
   ADD CONSTRAINT `tbl_incidents_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`);
+
+--
+-- Constraints for table `tbl_notifications`
+--
+ALTER TABLE `tbl_notifications`
+  ADD CONSTRAINT `tbl_notifications_ibfk_1` FOREIGN KEY (`incident_id`) REFERENCES `tbl_incidents` (`incident_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tbl_notifications_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tbl_reports`
+--
+ALTER TABLE `tbl_reports`
+  ADD CONSTRAINT `tbl_reports_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

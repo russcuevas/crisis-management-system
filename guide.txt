@@ -7,6 +7,10 @@ crisismanagement001@gmail.com
 Crisismanagement01!
 esbtdkbkszzputyq
 
+ADMIN ACCOUNT:
+admin@gmail.com
+AdminCMS123!
+
 tables
 
 tbl_admin
