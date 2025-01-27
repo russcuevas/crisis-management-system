@@ -271,11 +271,13 @@ $unread_count = $result_count_notifications['unread_count'];
                                     REPORTS SUMMARY
                                 </h2>
                                 <div id="print-container">
-                                    <button type="submit" class="btn bg-red waves-effect btn-sm">
+                                    <a href="print/print_reports.php?month=<?php echo isset($_GET['month']) ? $_GET['month'] : ''; ?>&year=<?php echo isset($_GET['year']) ? $_GET['year'] : ''; ?>" class="btn bg-red waves-effect btn-sm" target="_blank">
                                         <i class="material-icons">print</i>
                                         <span>DOWNLOAD FOR PRINT</span>
-                                    </button>
+                                    </a>
+
                                 </div>
+
                             </div>
                         </div>
 
@@ -321,7 +323,6 @@ $unread_count = $result_count_notifications['unread_count'];
                                             </a>
                                         </div>
                                     </div>
-
                                 </div>
                             </form>
 
@@ -413,74 +414,6 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
-
-    <!-- PRINT DATA IN THE SELECTED YEAR AND MONTH -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.26/jspdf.plugin.autotable.min.js"></script>
-    <script>
-        document.getElementById('print-container').addEventListener('click', function() {
-            const {
-                jsPDF
-            } = window.jspdf;
-            const doc = new jsPDF();
-
-            const selectedMonth = document.querySelector('[name="month"]').value;
-            const selectedYear = document.querySelector('[name="year"]').value;
-
-            const months = [
-                "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
-            ];
-
-            let reportText = '';
-            if (selectedMonth && selectedYear) {
-                const monthName = months[selectedMonth];
-                reportText = `Report for ${monthName} ${selectedYear}`;
-            } else {
-                reportText = 'Report for All Years and All Months';
-            }
-
-            const logoWidth = 25;
-            const logoHeight = 25;
-            const logoX = (doc.internal.pageSize.width - logoWidth) / 2;
-            const logoY = 10;
-            doc.addImage('images/admin/crisis.jpg', 'JPEG', logoX, logoY, logoWidth, logoHeight);
-
-            doc.setFontSize(20);
-            const title = "Crisis Management System";
-            const titleWidth = doc.getTextWidth(title);
-            const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
-            doc.text(title, titleX, logoY + logoHeight + 5);
-
-            doc.setFontSize(16);
-            const reportTextWidth = doc.getTextWidth(reportText);
-            const reportTextX = (doc.internal.pageSize.width - reportTextWidth) / 2;
-            doc.text(reportText, reportTextX, logoY + logoHeight + 15);
-
-            const reportTextBottomMargin = 10;
-            const spaceBeforeTable = logoY + logoHeight + 25 + reportTextBottomMargin;
-
-            const table = document.getElementById('reportTable');
-            doc.autoTable({
-                html: table,
-                startY: spaceBeforeTable,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: '#bc1823',
-                    textColor: '#ffffff',
-                    fontSize: 10,
-                },
-                styles: {
-                    fontSize: 10,
-                }
-            });
-
-            doc.save('report-summary.pdf');
-        });
-    </script>
-
-
-
-
 
 
 
