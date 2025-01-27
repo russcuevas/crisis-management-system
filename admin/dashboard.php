@@ -267,7 +267,7 @@ $unread_count = $result_count_notifications['unread_count'];
             </div>
             <!-- Widgets -->
             <div class="row clearfix">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='admins.php';">
                     <div class="info-box bg-red hover-expand-effect">
                         <div class="icon">
                             <i class="material-icons">admin_panel_settings</i>
@@ -278,7 +278,7 @@ $unread_count = $result_count_notifications['unread_count'];
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='users.php'">
                     <div class="info-box bg-red hover-expand-effect">
                         <div class="icon">
                             <i class="material-icons">groups</i>
@@ -289,7 +289,7 @@ $unread_count = $result_count_notifications['unread_count'];
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pending_complain.php'">
                     <div class="info-box bg-red hover-expand-effect">
                         <div class="icon">
                             <i class="material-icons">pending</i>
