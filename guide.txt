@@ -108,5 +108,10 @@ VIEWING ALL THE USERS PAGE BUT CANNOT EDIT ONLY VIEW
 functions
 clicking admin dashboard 3 box - CHECK
 download print must be view first the data before printing - TODO
+<<<<<<< HEAD
 reset button must be not color gray - CHECK
 add another admin account - CHECK
+=======
+reset button must be not color gray - TODO
+add another admin account - TODO
+>>>>>>> 42d96950e55c6018cd795385318faf8a098c6e9a

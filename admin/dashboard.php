@@ -273,8 +273,13 @@ $unread_count = $result_count_notifications['unread_count'];
             </div>
             <!-- Widgets -->
             <div class="row clearfix">
+<<<<<<< HEAD
                 <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='manage_admin.php'">
                     <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
+=======
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='admins.php';">
+                    <div class="info-box bg-red hover-expand-effect">
+>>>>>>> 42d96950e55c6018cd795385318faf8a098c6e9a
                         <div class="icon">
                             <i class="material-icons">admin_panel_settings</i>
                         </div>
@@ -285,7 +290,11 @@ $unread_count = $result_count_notifications['unread_count'];
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='users.php'">
+<<<<<<< HEAD
                     <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
+=======
+                    <div class="info-box bg-red hover-expand-effect">
+>>>>>>> 42d96950e55c6018cd795385318faf8a098c6e9a
                         <div class="icon">
                             <i class="material-icons">groups</i>
                         </div>
@@ -296,7 +305,11 @@ $unread_count = $result_count_notifications['unread_count'];
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pending_complain.php'">
+<<<<<<< HEAD
                     <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
+=======
+                    <div class="info-box bg-red hover-expand-effect">
+>>>>>>> 42d96950e55c6018cd795385318faf8a098c6e9a
                         <div class="icon">
                             <i class="material-icons">pending</i>
                         </div>
