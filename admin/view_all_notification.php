@@ -172,6 +172,14 @@ $unread_count = $result_count_notifications['unread_count'];
                             <span>Dashboard</span>
                         </a>
                     </li>
+
+                    <li>
+                        <a href="manage_admin.php">
+                            <i class="material-icons">admin_panel_settings</i>
+                            <span>Admin</span>
+                        </a>
+                    </li>
+
                     <li>
                         <a href="users.php">
                             <i class="material-icons">groups</i>
