@@ -106,4 +106,7 @@ VIEWING ALL THE USERS PAGE BUT CANNOT EDIT ONLY VIEW
 
 
 functions
-send sms notification send code then verify account
+clicking admin dashboard 3 box - CHECK
+download print must be view first the data before printing - TODO
+reset button must be not color gray - TODO
+add another admin account - TODO
