@@ -7,30 +7,11 @@ if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 
-$month = isset($_GET['month']) ? $_GET['month'] : '';
-$year = isset($_GET['year']) ? $_GET['year'] : '';
-
-// Build the SQL query
-$sql = "SELECT tbl_reports.*, tbl_users.fullname 
-        FROM tbl_reports 
-        LEFT JOIN tbl_users ON tbl_reports.user_id = tbl_users.id";
-
-// Apply filtering if month or year is selected
-if ($month && $year) {
-    $sql .= " WHERE MONTH(tbl_reports.incident_datetime) = :month AND YEAR(tbl_reports.incident_datetime) = :year";
-}
-
-// Execute the query
-$stmt = $conn->prepare($sql);
-
-// Bind the parameters if filtering
-if ($month && $year) {
-    $stmt->bindParam(':month', $month, PDO::PARAM_STR);
-    $stmt->bindParam(':year', $year, PDO::PARAM_STR);
-}
-
-$stmt->execute();
-$complaints = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// READ USER
+$get_users = "SELECT * FROM `tbl_admin`";
+$get_stmt = $conn->query($get_users);
+$admins = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
+// END READ USER
 
 // applicable to all page
 // fetching notifs
@@ -88,6 +69,7 @@ $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
 //end applicable to all page
+
 ?>
 
 <!DOCTYPE html>
@@ -122,6 +104,9 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Custom Css -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/themes/all-themes.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
 
     </style>
@@ -163,12 +148,21 @@ $unread_count = $result_count_notifications['unread_count'];
                             <span>Dashboard</span>
                         </a>
                     </li>
+
+                    <li class="active">
+                        <a href="manage_admin.php">
+                            <i class="material-icons">admin_panel_settings</i>
+                            <span>Admin</span>
+                        </a>
+                    </li>
+
                     <li>
                         <a href="users.php">
                             <i class="material-icons">groups</i>
                             <span>Users</span>
                         </a>
                     </li>
+
 
                     <li>
                         <a href="feedback.php">
@@ -196,12 +190,13 @@ $unread_count = $result_count_notifications['unread_count'];
                         </ul>
                     </li>
 
-                    <li class="active">
+                    <li>
                         <a href="reports.php">
                             <i class="material-icons">report</i>
                             <span>Reports</span>
                         </a>
                     </li>
+
                 </ul>
             </div>
             <!-- #Menu -->
@@ -249,8 +244,8 @@ $unread_count = $result_count_notifications['unread_count'];
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
                     <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
-                    <li class="active"><i style="font-size: 20px;" class="material-icons">report</i>
-                        Reports
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">admin_panel_settings</i>
+                        Admin Management
                     </li>
                 </ol>
             </div>
@@ -262,96 +257,90 @@ $unread_count = $result_count_notifications['unread_count'];
                         <div class="header">
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                    REPORTS SUMMARY
+                                    Admin Management
                                 </h2>
                                 <div id="print-container">
-                                    <button type="submit" class="btn bg-red waves-effect btn-sm">
-                                        <i class="material-icons">print</i>
-                                        <span>DOWNLOAD FOR PRINT</span>
-                                    </button>
+                                    <a href="add_admin.php" class="btn bg-red waves-effect btn-sm">
+                                        <i class="material-icons">admin_panel_settings</i>
+                                        <span>ADD ADMIN +</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-
                         <div class="body">
-                            <!-- Filtering Form -->
-                            <form method="GET" action="reports.php">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <select name="month" class="form-control" required>
-                                            <option value="">Select Month</option>
-                                            <option value="01" <?php if (isset($_GET['month']) && $_GET['month'] == '01') echo 'selected'; ?>>January</option>
-                                            <option value="02" <?php if (isset($_GET['month']) && $_GET['month'] == '02') echo 'selected'; ?>>February</option>
-                                            <option value="03" <?php if (isset($_GET['month']) && $_GET['month'] == '03') echo 'selected'; ?>>March</option>
-                                            <option value="04" <?php if (isset($_GET['month']) && $_GET['month'] == '04') echo 'selected'; ?>>April</option>
-                                            <option value="05" <?php if (isset($_GET['month']) && $_GET['month'] == '05') echo 'selected'; ?>>May</option>
-                                            <option value="06" <?php if (isset($_GET['month']) && $_GET['month'] == '06') echo 'selected'; ?>>June</option>
-                                            <option value="07" <?php if (isset($_GET['month']) && $_GET['month'] == '07') echo 'selected'; ?>>July</option>
-                                            <option value="08" <?php if (isset($_GET['month']) && $_GET['month'] == '08') echo 'selected'; ?>>August</option>
-                                            <option value="09" <?php if (isset($_GET['month']) && $_GET['month'] == '09') echo 'selected'; ?>>September</option>
-                                            <option value="10" <?php if (isset($_GET['month']) && $_GET['month'] == '10') echo 'selected'; ?>>October</option>
-                                            <option value="11" <?php if (isset($_GET['month']) && $_GET['month'] == '11') echo 'selected'; ?>>November</option>
-                                            <option value="12" <?php if (isset($_GET['month']) && $_GET['month'] == '12') echo 'selected'; ?>>December</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <select name="year" class="form-control" required>
-                                            <option value="">Select Year</option>
-                                            <?php
-                                            $currentYear = date('Y');
-                                            for ($i = 2024; $i <= $currentYear; $i++) {
-                                                echo "<option value='$i'" . (isset($_GET['year']) && $_GET['year'] == $i ? ' selected' : '') . ">$i</option>";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="d-flex justify-content-between">
-                                            <button type="submit" class="btn bg-red waves-effect btn-sm" style="width:48%;">FILTER
-                                                <i style="font-size: 15px;" class="material-icons">filter_alt</i>
-                                            </button>
-                                            <a href="reports.php" class="btn bg-black waves-effect btn-sm" style="width:48%; text-align:center;">RESET
-                                                <i style="font-size: 15px;" class="material-icons">restart_alt</i>
-                                            </a>
-                                        </div>
-                                    </div>
 
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['success']; ?>
+                                    <?php unset($_SESSION['success']);
+                                    ?>
                                 </div>
-                            </form>
+                            <?php endif; ?>
 
+                            <?php if (isset($_SESSION['error'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['error']; ?>
+                                    <?php unset($_SESSION['error']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
 
                             <div class="table-responsive">
-                                <table id="reportTable" class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
                                     <thead>
                                         <tr>
-                                            <th>Complainant</th>
-                                            <th>Type</th>
-                                            <th>Description</th>
-                                            <th>Location</th>
-                                            <th>Landmark</th>
-                                            <th>Date/Time</th>
-                                            <th>Status</th>
+                                            <th>Email</th>
+                                            <th>Created At</th>
+                                            <th>Updated At</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($complaints as $complaint): ?>
+                                        <?php foreach ($admins as $admin) : ?>
                                             <tr>
-                                                <td><?php echo $complaint['fullname'] ?></td>
-                                                <td><?php echo $complaint['incident_type'] ?></td>
-                                                <td><?php echo $complaint['incident_description'] ?></td>
-                                                <td><?php echo $complaint['incident_location_map'] ?></td>
-                                                <td><?php echo $complaint['incident_landmark'] ?></td>
-                                                <td><?php echo $complaint['incident_datetime'] ?></td>
-                                                <td style="color:green; font-weight: 900;"><?php echo $complaint['status'] ?></td>
+                                                <td><?php echo $admin['email'] ?></td>
+                                                <td><?php echo $admin['created_at'] ?></td>
+                                                <td><?php echo $admin['updated_at'] ?></td>
+                                                <td>
+                                                    <a class="btn btn-warning" href="update_admin.php?id=<?php echo $admin['id']; ?>">UPDATE <i class="fa fa-edit"></i></a>
+                                                    <a class="btn btn-danger" href="javascript:void(0);" data-toggle="modal" data-target="#deleteAdminModal" onclick="setAdminId(<?php echo $admin['id']; ?>)">
+                                                        DELETE <i class="fa fa-trash"></i>
+                                                    </a>
+
+                                                    <!-- DELETE USER MODAL -->
+                                                    <div class="modal fade" id="deleteAdminModal" tabindex="-1" role="dialog" aria-labelledby="deleteAdminModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="deleteAdminModalLabel">Confirm Deletion</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    Are you sure you want to delete this admin? all records will also deleted
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <form id="deleteAdminForm" method="POST" action="delete_admin.php">
+                                                                        <input type="hidden" name="id" id="admin_id_delete">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         <?php endforeach ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
                     </div>
                 </div>
+            </div>
     </section>
 
     <!-- Jquery Core Js -->
@@ -408,77 +397,12 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Demo Js -->
     <script src="js/demo.js"></script>
 
-    <!-- PRINT DATA IN THE SELECTED YEAR AND MONTH -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.26/jspdf.plugin.autotable.min.js"></script>
+    <!-- DELETE USERS -->
     <script>
-        document.getElementById('print-container').addEventListener('click', function() {
-            const {
-                jsPDF
-            } = window.jspdf;
-            const doc = new jsPDF();
-
-            const selectedMonth = document.querySelector('[name="month"]').value;
-            const selectedYear = document.querySelector('[name="year"]').value;
-
-            const months = [
-                "", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
-            ];
-
-            let reportText = '';
-            if (selectedMonth && selectedYear) {
-                const monthName = months[selectedMonth];
-                reportText = `Report for ${monthName} ${selectedYear}`;
-            } else {
-                reportText = 'Report for All Years and All Months';
-            }
-
-            const logoWidth = 25;
-            const logoHeight = 25;
-            const logoX = (doc.internal.pageSize.width - logoWidth) / 2;
-            const logoY = 10;
-            doc.addImage('images/admin/crisis.jpg', 'JPEG', logoX, logoY, logoWidth, logoHeight);
-
-            doc.setFontSize(20);
-            const title = "Crisis Management System";
-            const titleWidth = doc.getTextWidth(title);
-            const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
-            doc.text(title, titleX, logoY + logoHeight + 5);
-
-            doc.setFontSize(16);
-            const reportTextWidth = doc.getTextWidth(reportText);
-            const reportTextX = (doc.internal.pageSize.width - reportTextWidth) / 2;
-            doc.text(reportText, reportTextX, logoY + logoHeight + 15);
-
-            const reportTextBottomMargin = 10;
-            const spaceBeforeTable = logoY + logoHeight + 25 + reportTextBottomMargin;
-
-            const table = document.getElementById('reportTable');
-            doc.autoTable({
-                html: table,
-                startY: spaceBeforeTable,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: '#bc1823',
-                    textColor: '#ffffff',
-                    fontSize: 10,
-                },
-                styles: {
-                    fontSize: 10,
-                }
-            });
-
-            doc.save('report-summary.pdf');
-        });
+        function setAdminId(adminId) {
+            document.getElementById('admin_id_delete').value = adminId;
+        }
     </script>
-
-
-
-
-
-
-
-
 
 
 </body>
