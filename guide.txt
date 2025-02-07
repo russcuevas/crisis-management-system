@@ -115,3 +115,11 @@ add another admin account - CHECK
 reset button must be not color gray - TODO
 add another admin account - TODO
 >>>>>>> 42d96950e55c6018cd795385318faf8a098c6e9a
+
+
+1. ADMIN (Users management- imbes po na update at delete ang nakalagay, papalitan nalang po yung "UPDATE" ng "APPROVE" and stay put lang po yung "Delete" bale hindi na po kailangan i open yung information ni user para i approve kase nakikita naman po sa users management yung kanyang infos.)
+2. DASHBOARD NI ADMIN - BALE BABAWASAN NALANG PO YUNG MGA INCIDENTS. BALE FLOOD, EARTHQUAKE AT TYPHOON NALANG PO YUNG ILALAGAY. 
+3. MAPPING - IMBES NA WHOLE PHILIPPINES PO, GAGAWIN NALANG GUIMARAS YUNG MAPPING HEHEHE.
+4. YUNG LOG IN FORM AT ADMIN FORM PO AY DAPAT ISANG LOCALHOST NALANG PO, bale dun nalang po mamimili if si admin or si user po yung mag lolog-in or register po. 
+5. KAY USER naman po- sa report ng users isang location lng po sana, bale aalisin isang yung location total meron naman po ma pi-pin pag mag pin sa map hehehe - CHECK
+6. Users feedback- alisin nalang po yung "question" hehe - CHECK

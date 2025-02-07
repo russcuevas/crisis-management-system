@@ -23,7 +23,6 @@ if (isset($_GET['id'])) {
     if ($feedback) {
         $sender = $feedback['fullname'];
         $email = $feedback['email'];
-        $question = $feedback['question'];
         $feedback_text = $feedback['feedback'];
     } else {
         $_SESSION['feedback_error'] = 'Feedback not found';
@@ -36,7 +35,7 @@ if (isset($_GET['id'])) {
     exit();
 }
 
-function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback_text)
+function sendResponseEmail($recipientEmail, $adminResponse, $feedback_text)
 {
     $mail = new PHPMailer(true);
     try {
@@ -55,7 +54,6 @@ function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback
 
         $mail->Body = "Dear User,<br><br>" .
             "Thank you for your feedback!<br><br>" .
-            "We have reviewed your question: <b>$question</b><br>" .
             "Your feedback: <i>$feedback_text</i><br><br>" .
             "Our response: <p>$adminResponse</p><br><br>" .
             "Best regards,<br>" .
@@ -71,7 +69,7 @@ function sendResponseEmail($recipientEmail, $adminResponse, $question, $feedback
 // sending email response
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['response'])) {
     $response = $_POST['response'];
-    if (sendResponseEmail($email, $response, $question, $feedback_text)) {
+    if (sendResponseEmail($email, $response, $feedback_text)) {
         $_SESSION['feedback_success'] = 'Response sent successfully!';
         header('Location: feedback.php');
         exit();
@@ -338,11 +336,6 @@ $unread_count = $result_count_notifications['unread_count'];
                                 <div class="form-group form-float">
                                     <label class="form-label">Email</label>
                                     <input style="background-color: gray; color: whitesmoke" type="email" class="form-control" value="<?php echo htmlspecialchars($email); ?>" readonly>
-                                </div>
-
-                                <div class="form-group form-float">
-                                    <label class="form-label">Question</label>
-                                    <textarea style="background-color: gray; color: whitesmoke" class="form-control" rows="3" readonly><?php echo htmlspecialchars($question); ?></textarea>
                                 </div>
 
                                 <div class="form-group form-float">

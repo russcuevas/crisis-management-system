@@ -188,13 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </div>
                             </div>
 
-                            <div class="form-group form-float" style="margin-top: 10px !important;">
-                                <label style="color: #212529; font-weight: 600;" class="form-label">Question</label>
-                                <div class="form-line">
-                                    <input type="text" class="form-control" name="question" required>
-                                </div>
-                            </div>
-
 
                             <div class="form-group form-float" style="margin-top: 10px !important;">
                                 <label style="color: #212529; font-weight: 600;" class="form-label">Email</label>

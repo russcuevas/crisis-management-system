@@ -463,10 +463,6 @@ $unread_count = $result_count_notifications['unread_count'];
                                         <td><?php echo nl2br(htmlspecialchars($incident['incident_description'])); ?></td>
                                     </tr>
                                     <tr>
-                                        <th>Location</th>
-                                        <td><?php echo htmlspecialchars($incident['incident_location']); ?></td>
-                                    </tr>
-                                    <tr>
                                         <th>Landmark</th>
                                         <td><?php echo htmlspecialchars($incident['incident_landmark']); ?></td>
                                     </tr>

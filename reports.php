@@ -284,9 +284,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
 
                         <div class="form-group form-float" style="margin-top: 30px !important;">
-                            <label style="color: #212529; font-weight: 600;" class="form-label">Location</label>
+                            <label style="color: #212529; font-weight: 600; display: none;" class="form-label">Location</label>
                             <div class="form-line">
-                                <input type="text" class="form-control" id="incident_location" name="incident_location" required>
+                                <input type="hidden" class="form-control" id="incident_location" name="incident_location" required>
                             </div>
                         </div>
 
