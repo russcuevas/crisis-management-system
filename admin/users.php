@@ -308,13 +308,18 @@ $unread_count = $result_count_notifications['unread_count'];
                                                 <td><?php echo $user['updated_at'] ?></td>
                                                 <td>
                                                     <div style="display: flex !important; justify-content: end; gap: 10px;">
-                                                        <a class="btn btn-warning" href="update_users.php?id=<?php echo $user['id']; ?>">UPDATE <i class="fa fa-edit"></i></a>
-                                                        <a class="btn btn-danger" href="javascript:void(0);" data-toggle="modal" data-target="#deleteUserModal" onclick="setUserId(<?php echo $user['id']; ?>)">
-                                                            DELETE <i class="fa fa-trash"></i>
-                                                        </a>
+                                                        <?php if ($user['is_verified'] == 0): ?>
+                                                            <a class="btn btn-success" href="approve_user.php?id=<?php echo $user['id']; ?>">APPROVE <i class="fa fa-check"></i></a>
+                                                        <?php else: ?>
+                                                        <?php endif; ?>
+
+                                                        <?php if ($user['is_verified'] == 1): ?>
+                                                            <!-- Delete button only for verified users -->
+                                                            <a class="btn btn-danger" href="javascript:void(0);" data-toggle="modal" data-target="#deleteUserModal" onclick="setUserId(<?php echo $user['id']; ?>)">
+                                                                DELETE <i class="fa fa-trash"></i>
+                                                            </a>
+                                                        <?php endif; ?>
                                                     </div>
-
-
 
                                                     <!-- DELETE USER MODAL -->
                                                     <div class="modal fade" id="deleteUserModal" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
@@ -327,7 +332,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                                                     </button>
                                                                 </div>
                                                                 <div class="modal-body">
-                                                                    Are you sure you want to delete this user? all records will also deleted
+                                                                    Are you sure you want to delete this user? All records will also be deleted.
                                                                 </div>
                                                                 <div class="modal-footer">
                                                                     <form id="deleteUserForm" method="POST" action="delete_users.php">
@@ -340,6 +345,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                                         </div>
                                                     </div>
                                                 </td>
+
                                             </tr>
                                         <?php endforeach ?>
                                     </tbody>
