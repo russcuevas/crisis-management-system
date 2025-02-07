@@ -351,6 +351,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.maskcanvas"></script> <!-- Mask plugin -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/5.1.0/screenfull.min.js"></script>
 
     <!-- JQUERY VALIDATION -->
@@ -384,17 +386,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <!-- MAP AND DATE TIME -->
     <script>
-        var map = L.map('map').setView([13.41, 122.56], 6);
+        var map = L.map('map', {
+            center: [10.58, 122.63], // Centered in Guimaras
+            zoom: 12, // Zoom level focused on Guimaras
+            minZoom: 11, // Prevent zooming out too much
+            maxZoom: 16, // Limit zoom-in
+            maxBounds: [ // Restrict map view to Guimaras Island
+                [10.4, 122.45], // Southwest corner
+                [10.75, 122.85] // Northeast corner
+            ],
+            maxBoundsViscosity: 1.0 // Prevents moving outside the bounds
+        });
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        map.setMaxBounds([
-            [4.6, 116.9],
-            [21.4, 126.6]
-        ]);
-
-        var marker = L.marker([13.41, 122.56], {
+        var marker = L.marker([10.58, 122.63], {
             draggable: true
         }).addTo(map);
 
@@ -410,14 +418,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('incident_latitude').value = lat;
             document.getElementById('incident_longitude').value = lon;
 
-            // Optionally, use reverse geocoding to get the place name
-            var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-
-            fetch(url)
+            // Reverse geocoding
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
                 .then(response => response.json())
                 .then(data => {
                     var placeName = data.display_name || "Location not found";
-                    document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+                    document.getElementById('mapLocation').value = placeName;
                 })
                 .catch(error => {
                     console.error("Error fetching place name:", error);
@@ -437,21 +443,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('incident_latitude').value = lat;
             document.getElementById('incident_longitude').value = lon;
 
-            // Use reverse geocoding to get the place name
-            var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-
-            fetch(url)
+            // Reverse geocoding
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
                 .then(response => response.json())
                 .then(data => {
                     var placeName = data.display_name || "Location not found";
-                    document.getElementById('mapLocation').value = placeName; // Set place name in the input field
+                    document.getElementById('mapLocation').value = placeName;
                 })
                 .catch(error => {
                     console.error("Error fetching place name:", error);
                     document.getElementById('mapLocation').value = "Location not found";
                 });
         });
-
 
         function updateDateTime() {
             const options = {
@@ -464,21 +467,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 second: '2-digit',
                 timeZone: 'Asia/Manila'
             };
-
-            const date = new Date().toLocaleString('en-US', options);
-            document.getElementById('currentDateTime').textContent = "Today: " + date;
+            document.getElementById('currentDateTime').textContent = "Today: " + new Date().toLocaleString('en-US', options);
         }
-
         setInterval(updateDateTime, 1000);
-
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-        fullscreenBtn.addEventListener('click', function() {
-            if (screenfull.isEnabled) {
-                screenfull.toggle(document.getElementById('map'));
-            }
-        });
     </script>
+
+
 
     <!-- DISPLAYING IMAGE -->
     <script>
