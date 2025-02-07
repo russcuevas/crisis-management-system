@@ -7,41 +7,51 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-if (isset($_POST['email']) && isset($_POST['password'])) {
+if (isset($_SESSION['admin_id'])) {
+    header('Location: admin/dashboard.php');
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
+    $userType = $_POST['user_type']; // Get selected user type
 
-    $query = "SELECT * FROM tbl_users WHERE email = :email";
+    if ($userType == 'user') {
+        $query = "SELECT * FROM tbl_users WHERE email = :email";
+    } else {
+        $query = "SELECT * FROM tbl_admin WHERE email = :email";
+    }
+
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
     $stmt->execute();
 
     if ($stmt->rowCount() == 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (sha1($password) === $user['password']) {
-            if ($user['is_verified'] == 1) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['is_verified'] = $user['is_verified'];
-
-                header('Location: home.php');
-                exit();
+            if ($userType == 'user') {
+                if ($user['is_verified'] == 1) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['email'] = $user['email'];
+                    header('Location: home.php');
+                    exit();
+                } else {
+                    $_SESSION['error_message'] = "Your account is not verified! Check your email.";
+                    header('Location: login.php');
+                    exit();
+                }
             } else {
-                $_SESSION['error_message'] = "Your account is not verified! check your email";
-                header('Location: login.php');
+                $_SESSION['admin_id'] = $user['id'];
+                header('Location: admin/dashboard.php');
                 exit();
             }
-        } else {
-            $_SESSION['error_message'] = "Invalid email or password!";
-            header('Location: login.php');
-            exit();
         }
-    } else {
-        $_SESSION['error_message'] = "Invalid email or password!";
-        header('Location: login.php');
-        exit();
     }
+
+    $_SESSION['error_message'] = "Invalid email or password!";
+    header('Location: login.php');
+    exit();
 }
 ?>
 
@@ -51,31 +61,16 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-    <title>Crisis Management System</title>
-    <!-- Favicon-->
+    <title>Login - Crisis Management System</title>
     <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet"
-        type="text/css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
-
-    <!-- Bootstrap Core Css -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="assets/plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
-
-    <!-- Waves Effect Css -->
-    <link href="assets/plugins/node-waves/waves.css" rel="stylesheet" />
-
-    <!-- Animation Css -->
-    <link href="assets/plugins/animate-css/animate.css" rel="stylesheet" />
-
-    <!-- Custom Css -->
     <link href="assets/css/style.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif !important;
-            background: linear-gradient(to right, #000000, #3c0f12) !important;
-
+            background: linear-gradient(to right, #000000, #3c0f12);
         }
     </style>
 </head>
@@ -83,9 +78,9 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
 <body class="login-page">
     <div class="login-box">
         <div class="logo">
-            <a href="home.php">
-                <img src="assets/images/login/crisis.jpg" alt="Crisis Management System Logo" class="logo-img">
-                <span class="logo-text" style="font-size: 50px; color: whitesmoke; font-weight: 600 !important;">CMS</span>
+            <a href="login.php">
+                <img src="assets/images/login/crisis.jpg" alt="CMS Logo" class="logo-img">
+                <span class="logo-text" style="font-size: 50px; color: whitesmoke; font-weight: 600;">CMS</span>
             </a>
         </div>
 
@@ -94,13 +89,25 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                 <form id="sign_in" method="POST">
                     <div class="msg"><span style="font-size: 30px;">Login</span></div>
 
-                    <!-- Display Error Message -->
                     <?php if (isset($_SESSION['error_message'])): ?>
                         <div class="alert alert-danger">
-                            <?php echo $_SESSION['error_message']; ?>
-                            <?php unset($_SESSION['error_message']); ?>
+                            <?php echo $_SESSION['error_message'];
+                            unset($_SESSION['error_message']); ?>
                         </div>
                     <?php endif; ?>
+
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="material-icons">person</i>
+                        </span>
+                        <div class="form-line">
+                            <select name="user_type" class="form-control" required>
+                                <option value="" disabled selected>Select Type</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="input-group">
                         <span class="input-group-addon">
@@ -110,6 +117,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                             <input type="text" class="form-control" name="email" placeholder="Email" required autofocus>
                         </div>
                     </div>
+
                     <div class="input-group">
                         <span class="input-group-addon">
                             <i class="material-icons">lock</i>
@@ -118,6 +126,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
                             <input type="password" class="form-control" name="password" placeholder="Password" required>
                         </div>
                     </div>
+
                     <button class="btn btn-block btn-lg bg-red waves-effect" type="submit">LOGIN</button>
 
                     <div class="m-t-25 m-b--5 align-center">
@@ -128,19 +137,10 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
         </div>
     </div>
 
-    <!-- Jquery Core Js -->
     <script src="assets/plugins/jquery/jquery.min.js"></script>
-
-    <!-- Bootstrap Core Js -->
     <script src="assets/plugins/bootstrap/js/bootstrap.js"></script>
-
-    <!-- Waves Effect Plugin Js -->
     <script src="assets/plugins/node-waves/waves.js"></script>
-
-    <!-- Validation Plugin Js -->
     <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
-
-    <!-- Custom Js -->
     <script src="assets/js/admin.js"></script>
     <script src="assets/js/pages/examples/sign-in.js"></script>
 </body>
