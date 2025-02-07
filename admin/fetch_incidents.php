@@ -4,7 +4,7 @@ include('../database/connection.php');
 $year = $_GET['year'];
 $incidentType = $_GET['incidentType'];
 
-$validIncidentTypes = ['Fire', 'Flood', 'Earthquake', 'Accident', 'Theft'];
+$validIncidentTypes = ['Flood', 'Earthquake', 'Typhoon'];
 
 if (!in_array($incidentType, $validIncidentTypes)) {
     echo json_encode(['error' => 'Invalid incident type']);

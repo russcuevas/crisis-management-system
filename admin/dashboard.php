@@ -308,38 +308,7 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
 
-            <!-- #END# Widgets -->
             <div class="row clearfix">
-                <!-- Bar Chart -->
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <div class="card">
-                        <div class="header">
-                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
-                                FIRE INCIDENT YEARLY
-                            </h2>
-                        </div>
-                        <div class="body">
-                            <form action="">
-                                <div class="form-group" style="display: flex; align-items: center;">
-                                    <label for="year-select-gender" style="font-weight: 600; margin-right: 10px;">Year:</label>
-                                    <div class="form-line" style="width: 100px">
-                                        <select class="form-control show-tick" id="year-select-gender" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="2026">2026</option>
-                                            <option value="2027">2027</option>
-                                            <option value="2028">2028</option>
-                                            <option value="2029">2029</option>
-                                            <option value="2030">2030</option>
-
-                                        </select>
-                                    </div>
-                                </div>
-                                <canvas id="fireIncident" height="200"></canvas>
-                            </form>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
@@ -353,7 +322,6 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <label for="year-select-flood" style="font-weight: 600; margin-right: 10px;">Year:</label>
                                     <div class="form-line" style="width: 100px">
                                         <select class="form-control show-tick" id="year-select-flood" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
                                             <option value="2025">2025</option>
                                             <option value="2026">2026</option>
                                             <option value="2027">2027</option>
@@ -369,10 +337,6 @@ $unread_count = $result_count_notifications['unread_count'];
                         </div>
                     </div>
                 </div>
-                <!-- #END# Bar Chart -->
-            </div>
-
-            <div class="row clearfix">
                 <!-- Bar Chart -->
                 <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                     <div class="card">
@@ -387,7 +351,6 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <label for="year-select-earthquake" style="font-weight: 600; margin-right: 10px;">Year:</label>
                                     <div class="form-line" style="width: 100px">
                                         <select class="form-control show-tick" id="year-select-earthquake" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
                                             <option value="2025">2025</option>
                                             <option value="2026">2026</option>
                                             <option value="2027">2027</option>
@@ -407,7 +370,7 @@ $unread_count = $result_count_notifications['unread_count'];
                     <div class="card">
                         <div class="header">
                             <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
-                                ACCIDENT INCIDENT YEARLY
+                                TYPHOON INCIDENT YEARLY
                             </h2>
                         </div>
                         <div class="body">
@@ -416,81 +379,16 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <label for="year-select-accident" style="font-weight: 600; margin-right: 10px;">Year:</label>
                                     <div class="form-line" style="width: 100px">
                                         <select class="form-control show-tick" id="year-select-accident" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
                                             <option value="2025">2025</option>
                                             <option value="2026">2026</option>
                                             <option value="2027">2027</option>
                                             <option value="2028">2028</option>
                                             <option value="2029">2029</option>
                                             <option value="2030">2030</option>
-
                                         </select>
                                     </div>
                                 </div>
                                 <canvas id="accidentIncident" height="200"></canvas>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- #END# Bar Chart -->
-
-            <div class="row clearfix">
-                <!-- Bar Chart -->
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <div class="card">
-                        <div class="header">
-                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
-                                THEFT INCIDENT YEARLY
-                            </h2>
-                        </div>
-                        <div class="body">
-                            <form action="">
-                                <div class="form-group" style="display: flex; align-items: center;">
-                                    <label for="year-select-theft" style="font-weight: 600; margin-right: 10px;">Year:</label>
-                                    <div class="form-line" style="width: 100px">
-                                        <select class="form-control show-tick" id="year-select-theft" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="2026">2026</option>
-                                            <option value="2027">2027</option>
-                                            <option value="2028">2028</option>
-                                            <option value="2029">2029</option>
-                                            <option value="2030">2030</option>
-
-                                        </select>
-                                    </div>
-                                </div>
-                                <canvas id="theftIncident" height="200"></canvas>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                    <div class="card">
-                        <div class="header">
-                            <h2 style="font-size: 17px; font-weight: 900; color: #bc1823;">
-                                OTHER CASE INCIDENT YEARLY
-                            </h2>
-                        </div>
-                        <div class="body">
-                            <form action="">
-                                <div class="form-group" style="display: flex; align-items: center;">
-                                    <label for="year-select-other" style="font-weight: 600; margin-right: 10px;">Year:</label>
-                                    <div class="form-line" style="width: 100px">
-                                        <select class="form-control show-tick" id="year-select-other" style="border: none; box-shadow: none;">
-                                            <option value="2024">2024</option>
-                                            <option value="2025">2025</option>
-                                            <option value="2026">2026</option>
-                                            <option value="2027">2027</option>
-                                            <option value="2028">2028</option>
-                                            <option value="2029">2029</option>
-                                            <option value="2030">2030</option>
-
-                                        </select>
-                                    </div>
-                                </div>
-                                <canvas id="otherIncidents" height="200"></canvas>
                             </form>
                         </div>
                     </div>
@@ -623,11 +521,9 @@ $unread_count = $result_count_notifications['unread_count'];
             });
         }
 
-        createChartAndFetchData('fireIncident', 'year-select-gender', 'Fire');
         createChartAndFetchData('floodIncident', 'year-select-flood', 'Flood');
         createChartAndFetchData('earthquakeIncident', 'year-select-earthquake', 'Earthquake');
-        createChartAndFetchData('accidentIncident', 'year-select-accident', 'Accident');
-        createChartAndFetchData('theftIncident', 'year-select-theft', 'Theft');
+        createChartAndFetchData('accidentIncident', 'year-select-accident', 'Typhoon');
     </script>
 
     <script>

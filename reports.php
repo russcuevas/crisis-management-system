@@ -247,12 +247,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label for="incident_type" style="color: #212529; font-weight: 600;">Type of Incident</label>
                             <div class="form-line">
                                 <select class="form-select" id="incident_type" name="incident_type" required>
-                                    <option value="Fire">Fire</option>
                                     <option value="Flood">Flood</option>
                                     <option value="Earthquake">Earthquake</option>
-                                    <option value="Accident">Accident</option>
-                                    <option value="Theft">Theft</option>
-                                    <option value="Others">Others (Specify)</option>
+                                    <option value="Typhoon">Typhoon</option>
                                 </select>
                             </div>
                         </div>
