@@ -12,6 +12,7 @@ if (!isset($admin_id)) {
 if (isset($_GET['incident_id'])) {
     $incident_id = $_GET['incident_id'];
 
+    // Fetch incident details
     $sql = "SELECT tbl_incidents.*, tbl_users.fullname 
             FROM tbl_incidents 
             LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
@@ -33,11 +34,25 @@ if (isset($_GET['incident_id'])) {
         header('location:approve_complain.php');
         exit();
     }
+
+    // Decode JSON field from incident data
+    $respondents_ids = json_decode($incident['respondents_id'], true);
+    $respondent_types = [];
+
+    if (!empty($respondents_ids) && is_array($respondents_ids)) {
+        // Fetch corresponding type values
+        $placeholders = implode(',', array_fill(0, count($respondents_ids), '?'));
+        $sql = "SELECT type FROM tbl_responders WHERE id IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($respondents_ids);
+        $respondent_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 } else {
     $_SESSION['approve_success'] = "Incidents Not Found";
     header('location:approve_complain.php');
     exit();
 }
+
 
 //decode the image from json format
 $incident_proof = json_decode($incident['incident_proof'], true);
@@ -377,6 +392,10 @@ $unread_count = $result_count_notifications['unread_count'];
                                             </div>
 
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Respondents</th>
+                                        <td><?php echo !empty($respondent_types) ? htmlspecialchars(implode(', ', $respondent_types)) : 'No Respondents'; ?></td>
                                     </tr>
                                     <tr>
                                         <th>Complainant</th>

@@ -14,6 +14,7 @@ if (!isset($admin_id)) {
 if (isset($_GET['incident_id'])) {
     $incident_id = $_GET['incident_id'];
 
+    // Fetch the incident details
     $sql = "SELECT tbl_incidents.*, tbl_users.fullname 
         FROM tbl_incidents 
         LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
@@ -35,10 +36,22 @@ if (isset($_GET['incident_id'])) {
         header('location:pending_complain.php');
         exit();
     }
-} else {
-    $_SESSION['pending_errors'] = "Incidents Not Found";
-    header('location:pending_complain.php');
-    exit();
+
+    // Decode respondents_id (assuming it's stored as JSON)
+    $respondent_ids = json_decode($incident['respondents_id'], true);
+
+    if (!empty($respondent_ids)) {
+        // Convert array to comma-separated values for SQL query
+        $placeholders = implode(',', array_fill(0, count($respondent_ids), '?'));
+
+        // Fetch corresponding responder types
+        $sql = "SELECT type FROM tbl_responders WHERE id IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($respondent_ids);
+        $respondent_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } else {
+        $respondent_types = [];
+    }
 }
 
 //decode the image from json format
@@ -61,32 +74,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
 
         $insert_sql = "INSERT INTO tbl_reports (
-            user_id, 
-            incident_type, 
-            incident_description, 
-            incident_location, 
-            incident_landmark, 
-            incident_datetime, 
-            incident_location_map, 
-            status, 
-            created_at, 
-            updated_at, 
-            latitude, 
-            longitude
-        ) VALUES (
-            :user_id, 
-            :incident_type, 
-            :incident_description, 
-            :incident_location, 
-            :incident_landmark, 
-            :incident_datetime, 
-            :incident_location_map, 
-            'Approved', 
-            :created_at, 
-            :updated_at, 
-            :latitude, 
-            :longitude
-        )";
+user_id,
+incident_type,
+incident_description,
+incident_location,
+incident_landmark,
+incident_datetime,
+incident_location_map,
+status,
+created_at,
+updated_at,
+latitude,
+longitude
+) VALUES (
+:user_id,
+:incident_type,
+:incident_description,
+:incident_location,
+:incident_landmark,
+:incident_datetime,
+:incident_location_map,
+'Approved',
+:created_at,
+:updated_at,
+:latitude,
+:longitude
+)";
 
         $insert_stmt = $conn->prepare($insert_sql);
         $insert_stmt->bindParam(':user_id', $incident['user_id'], PDO::PARAM_INT);
@@ -104,9 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $insert_stmt->execute();
 
         //update notification description
-        $update_notifications_sql = "UPDATE tbl_notifications 
-                                     SET notification_description = 'Request approved' 
-                                     WHERE incident_id = :incident_id";
+        $update_notifications_sql = "UPDATE tbl_notifications
+SET notification_description = 'Request approved'
+WHERE incident_id = :incident_id";
         $update_notifications_stmt = $conn->prepare($update_notifications_sql);
         $update_notifications_stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
         $update_notifications_stmt->execute();
@@ -143,25 +156,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // applicable to all page
 // fetching notifs
 $sql_notifications = "
-    SELECT 
-        tbl_notifications.id AS notification_id,
-        tbl_notifications.incident_id,
-        tbl_notifications.user_id AS notification_user_id,
-        tbl_notifications.is_view,
-        tbl_notifications.created_at AS notification_created_at,
-        tbl_notifications.notification_description,  -- Added notification_description
-        tbl_incidents.incident_type,
-        tbl_incidents.incident_description AS incident_description,
-        tbl_incidents.status AS incident_status,
-        tbl_users.id AS user_id,
-        tbl_users.fullname AS user_fullname,
-        tbl_users.email AS user_email,
-        tbl_users.profile_picture AS user_profile_picture
-    FROM tbl_notifications
-    LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
-    LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
-    WHERE tbl_notifications.is_view = 0  -- Get only unread notifications
-    ORDER BY tbl_notifications.created_at DESC
+SELECT
+tbl_notifications.id AS notification_id,
+tbl_notifications.incident_id,
+tbl_notifications.user_id AS notification_user_id,
+tbl_notifications.is_view,
+tbl_notifications.created_at AS notification_created_at,
+tbl_notifications.notification_description, -- Added notification_description
+tbl_incidents.incident_type,
+tbl_incidents.incident_description AS incident_description,
+tbl_incidents.status AS incident_status,
+tbl_users.id AS user_id,
+tbl_users.fullname AS user_fullname,
+tbl_users.email AS user_email,
+tbl_users.profile_picture AS user_profile_picture
+FROM tbl_notifications
+LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
+LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
+WHERE tbl_notifications.is_view = 0 -- Get only unread notifications
+ORDER BY tbl_notifications.created_at DESC
 ";
 
 $notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
@@ -449,6 +462,10 @@ $unread_count = $result_count_notifications['unread_count'];
                                             </div>
 
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Respondents</th>
+                                        <td><?php echo !empty($respondent_types) ? htmlspecialchars(implode(', ', $respondent_types)) : 'No Respondents'; ?></td>
                                     </tr>
                                     <tr>
                                         <th>Complainant</th>

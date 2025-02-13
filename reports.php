@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $incidentType = $otherIncident;
     }
 
+    $respondentsJson = json_encode($_POST['respondents_id'] ?? []);
+
     $incidentProof = [];
     if (isset($_FILES['incident_proof']) && !empty($_FILES['incident_proof']['name'][0])) {
         $uploadedFiles = $_FILES['incident_proof'];
@@ -52,11 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $query = "INSERT INTO tbl_incidents 
-              (user_id, incident_type, incident_description, incident_proof, incident_location, 
-               incident_landmark, incident_datetime, incident_location_map, latitude, longitude, status, created_at, updated_at) 
-              VALUES 
-              (:user_id, :incident_type, :incident_description, :incident_proof, :incident_location, 
-               :incident_landmark, :incident_datetime, :incident_location_map, :latitude, :longitude, :status, NOW(), NOW())";
+        (user_id, incident_type, incident_description, incident_proof, incident_location, 
+         incident_landmark, incident_datetime, incident_location_map, latitude, longitude, status, 
+         respondents_id, created_at, updated_at) 
+        VALUES 
+        (:user_id, :incident_type, :incident_description, :incident_proof, :incident_location, 
+         :incident_landmark, :incident_datetime, :incident_location_map, :latitude, :longitude, :status, 
+         :respondents_id, NOW(), NOW())";
 
     $stmt = $conn->prepare($query);
     $status = 'Pending';
@@ -71,34 +75,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt->bindParam(':latitude', $latitude);
     $stmt->bindParam(':longitude', $longitude);
     $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':respondents_id', $respondentsJson);
 
     if ($stmt->execute()) {
         $incidentId = $conn->lastInsertId();
 
-        // add to notifications
+        // Add to notifications
         $notificationQuery = "INSERT INTO tbl_notifications (incident_id, user_id, is_view, notification_description) 
-                      VALUES (:incident_id, :user_id, 0, :notification_description)";
+                  VALUES (:incident_id, :user_id, 0, :notification_description)";
         $notificationStmt = $conn->prepare($notificationQuery);
+        $notification_description = "Requesting for approval";
         $notificationStmt->bindParam(':incident_id', $incidentId);
         $notificationStmt->bindParam(':user_id', $user_id);
         $notificationStmt->bindParam(':notification_description', $notification_description);
-        $notification_description = "Requesting for approval";
 
         if ($notificationStmt->execute()) {
-            $_SESSION['success'] = 'Reports successfully posted. Please wait for the approval of the admin';
-            header('Location: reports.php');
-            exit();
+            $_SESSION['success'] = 'Report successfully posted. Please wait for admin approval.';
         } else {
-            $_SESSION['error'] = 'Error creating notification';
-            header('Location: reports.php');
-            exit();
+            $_SESSION['error'] = 'Error creating notification.';
         }
     } else {
-        $_SESSION['error'] = 'Reports failed to post';
-        header('Location: reports.php');
-        exit();
+        $_SESSION['error'] = 'Failed to post report.';
     }
+
+    header('Location: reports.php');
+    exit();
 }
+
+$responders = [];
+$query = "SELECT id, type FROM tbl_responders";
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$responders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 
 
 ?>
@@ -119,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -154,6 +164,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         #mapLocation-error {
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 900;
+            color: red;
+        }
+
+        #respondents_id-error {
             font-size: 15px;
             margin-top: 5px;
             font-weight: 900;
@@ -254,6 +271,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         </div>
 
+                        <div class="form-group form-float" style="margin-top: 30px !important;">
+                            <label style="color: #212529; font-weight: 600;" class="form-label">Select Respondents</label>
+                            <div class="form-line">
+                                <select class="form-select" id="respondents_id" name="respondents_id[]" multiple required>
+                                    <?php foreach ($responders as $responder): ?>
+                                        <option value="<?php echo $responder['id']; ?>">
+                                            <?php echo htmlspecialchars($responder['type']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+
                         <div class="form-group form-float" id="otherIncidentInput" style="display: none;">
                             <label for="otherIncident" style="color: #212529; font-weight: 600;" class="form-label">Please Specify the Incident</label>
                             <div class="form-line">
@@ -309,6 +340,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         </div>
 
+
+
+
                         <!-- Post Button -->
                         <div class="text-end mt-5">
                             <?php if (isset($_SESSION['user_id'])): ?>
@@ -355,7 +389,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- JQUERY VALIDATION -->
     <script src="assets/plugins/jquery-validation/jquery.validate.js"></script>
     <script src="assets/js/pages/forms/form-validation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
+    <script>
+        $(document).ready(function() {
+            $('#respondents_id').select2({
+                placeholder: "Select Respondents",
+                allowClear: true
+            });
+        });
+    </script>
     <!-- SWEETALERT POST REPORTS -->
     <?php if (isset($_SESSION['success'])): ?>
         <script>
