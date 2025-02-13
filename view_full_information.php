@@ -5,6 +5,7 @@ include('database/connection.php');
 $is_logged_in = isset($_SESSION['user_id']);
 $user_id = $_SESSION['user_id'] ?? null;
 $incident_id = $_GET['id'] ?? null;
+
 if ($incident_id) {
     $query = "SELECT i.*, u.fullname FROM tbl_incidents i
               LEFT JOIN tbl_users u ON i.user_id = u.id
@@ -12,7 +13,6 @@ if ($incident_id) {
 
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
-
     $stmt->execute();
     $incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -20,10 +20,26 @@ if ($incident_id) {
         header('Location: history.php');
         exit();
     }
+
+    // Decode respondents_id (JSON)
+    $respondent_types = [];
+    $respondents_ids = json_decode($incident['respondents_id'], true);
+
+    if (!empty($respondents_ids) && is_array($respondents_ids)) {
+        $placeholders = implode(',', array_fill(0, count($respondents_ids), '?'));
+        $sql = "SELECT type FROM tbl_responders WHERE id IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($respondents_ids);
+        $respondent_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    // Store formatted responders in the incident array
+    $incident['responders'] = !empty($respondent_types) ? implode('<br>', $respondent_types) : 'No Responders';
 } else {
     header('Location: history.php');
     exit();
 }
+
 ?>
 
 
@@ -237,9 +253,10 @@ if ($incident_id) {
                 </div>
             </div>
             <div class="incident-details mt-5">
+                <p><strong>Responders:</strong><br> <span style="color: red;"><?php echo $incident['responders']; ?></span></p>
                 <p><strong>Type:</strong> <?php echo $incident['incident_type']; ?></p>
                 <p><strong>Description:</strong> <?php echo $incident['incident_description']; ?></p>
-                <p><strong>Location:</strong> <?php echo $incident['incident_location']; ?></p>
+                <p><strong>Location:</strong> <?php echo $incident['incident_location_map']; ?></p>
                 <p><strong>Landmark:</strong> <?php echo $incident['incident_landmark']; ?></p>
                 <p><strong>Date & Time:</strong> <?php echo $incident['incident_datetime']; ?></p>
                 <p><strong>Status:</strong> <span style="color: green;"><?php echo $incident['status']; ?></span></p>

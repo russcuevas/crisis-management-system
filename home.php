@@ -16,7 +16,8 @@ $total_incidents = $stmt_count->fetchColumn();
 
 $total_pages = ceil($total_incidents / $items_per_page);
 
-$query = "SELECT i.*, u.fullname FROM tbl_incidents i
+$query = "SELECT i.*, u.fullname 
+          FROM tbl_incidents i
           LEFT JOIN tbl_users u ON i.user_id = u.id
           WHERE i.status = 'Approved'
           ORDER BY i.created_at DESC
@@ -26,6 +27,26 @@ $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->bindParam(':items_per_page', $items_per_page, PDO::PARAM_INT);
 $stmt->execute();
 $incidents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($incidents as &$incident) {
+    $respondent_types = [];
+
+    // Decode JSON field from incident data
+    $respondents_ids = json_decode($incident['respondents_id'], true);
+
+    if (!empty($respondents_ids) && is_array($respondents_ids)) {
+        // Fetch corresponding type values from tbl_responders
+        $placeholders = implode(',', array_fill(0, count($respondents_ids), '?'));
+        $sql = "SELECT type FROM tbl_responders WHERE id IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($respondents_ids);
+        $respondent_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    // Store formatted responders in the incident array
+    $incident['responders'] = !empty($respondent_types) ? implode('<br>', $respondent_types) : 'No Responders';
+}
+
 
 function timeAgo($timestamp)
 {
@@ -206,7 +227,8 @@ function timeAgo($timestamp)
                                     </div>
                                 </div>
 
-                                <p style="margin-top: 20px !important;"><strong>Location - </strong> <?php echo htmlspecialchars($incident['incident_location_map']); ?></p>
+                                <p style="margin-top: 20px !important;"><strong>Responders - </strong><br> <?php echo $incident['responders']; ?></p>
+                                <p><strong>Location - </strong> <?php echo htmlspecialchars($incident['incident_location_map']); ?></p>
                                 <p><strong>Landmark - </strong> <?php echo htmlspecialchars($incident['incident_landmark']); ?></p>
                                 <p><strong>Date and Time - </strong> <?php echo htmlspecialchars($incident['incident_datetime']); ?></p>
 

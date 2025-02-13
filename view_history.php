@@ -24,11 +24,28 @@ if ($incident_id) {
         header('Location: history.php');
         exit();
     }
+
+    // Decode respondents_id (JSON)
+    $respondent_types = [];
+    $respondents_ids = json_decode($incident['respondents_id'], true);
+
+    if (!empty($respondents_ids) && is_array($respondents_ids)) {
+        // Fetch corresponding type values from tbl_responders
+        $placeholders = implode(',', array_fill(0, count($respondents_ids), '?'));
+        $sql = "SELECT type FROM tbl_responders WHERE id IN ($placeholders)";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($respondents_ids);
+        $respondent_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    // Store formatted responders in the incident array
+    $incident['responders'] = !empty($respondent_types) ? implode('<br>', $respondent_types) : 'No Responders';
 } else {
     header('Location: history.php');
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -238,9 +255,10 @@ if ($incident_id) {
                 </div>
             </div>
             <div class="incident-details mt-5">
+                <p><strong>Responders:</strong><br> <span style="color: red;"><?php echo $incident['responders']; ?></span></p>
                 <p><strong>Type:</strong> <?php echo $incident['incident_type']; ?></p>
                 <p><strong>Description:</strong> <?php echo $incident['incident_description']; ?></p>
-                <p><strong>Location:</strong> <?php echo $incident['incident_location']; ?></p>
+                <p><strong>Location:</strong> <?php echo $incident['incident_location_map']; ?></p>
                 <p><strong>Landmark:</strong> <?php echo $incident['incident_landmark']; ?></p>
                 <p><strong>Date & Time:</strong> <?php echo $incident['incident_datetime']; ?></p>
                 <p><strong>Status:</strong> <span style="color: green;"><?php echo $incident['status']; ?></span></p>

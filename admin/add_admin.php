@@ -296,7 +296,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                 </div>
 
                                 <div class="form-group form-float">
-                                    <label style="color: #212529; font-weight: 600;" class="form-label">Fullname:</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Office Name:</label>
                                     <div class="form-line">
                                         <input type="fullname" class="form-control" name="fullname" required>
                                     </div>

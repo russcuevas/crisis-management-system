@@ -30,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $incidentType = $_POST['incident_type'];
     $otherIncident = $_POST['otherIncident'] ?? '';
     $description = $_POST['incident_description'];
-    $location = $_POST['incident_location'];
     $landmark = $_POST['incident_landmark'];
     $dateTime = $_POST['incident_datetime'];
     $mapLocation = $_POST['incident_location_map'];
@@ -42,8 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $updateQuery = "UPDATE tbl_incidents 
-                    SET incident_type = :incident_type, incident_description = :incident_description,
-                        incident_location = :incident_location, incident_landmark = :incident_landmark,
+                    SET incident_type = :incident_type, incident_description = :incident_description, incident_landmark = :incident_landmark,
                         incident_datetime = :incident_datetime, incident_location_map = :incident_location_map,
                         latitude = :latitude, longitude = :longitude, updated_at = NOW()
                     WHERE incident_id = :incident_id";
@@ -51,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt = $conn->prepare($updateQuery);
     $stmt->bindParam(':incident_type', $incidentType);
     $stmt->bindParam(':incident_description', $description);
-    $stmt->bindParam(':incident_location', $location);
     $stmt->bindParam(':incident_landmark', $landmark);
     $stmt->bindParam(':incident_datetime', $dateTime);
     $stmt->bindParam(':incident_location_map', $mapLocation);
@@ -263,12 +260,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="form-group">
                 <label style="color: whitesmoke;" for="incident_type">Type of Incident</label>
                 <select class="form-select" id="incident_type" name="incident_type" required>
-                    <option value="Fire" <?= $incident['incident_type'] == 'Fire' ? 'selected' : ''; ?>>Fire</option>
                     <option value="Flood" <?= $incident['incident_type'] == 'Flood' ? 'selected' : ''; ?>>Flood</option>
                     <option value="Earthquake" <?= $incident['incident_type'] == 'Earthquake' ? 'selected' : ''; ?>>Earthquake</option>
-                    <option value="Accident" <?= $incident['incident_type'] == 'Accident' ? 'selected' : ''; ?>>Accident</option>
-                    <option value="Theft" <?= $incident['incident_type'] == 'Theft' ? 'selected' : ''; ?>>Theft</option>
-                    <option value="Others" <?= $incident['incident_type'] == 'Others' ? 'selected' : ''; ?>>Others (Specify)</option>
+                    <option value="Typhoon" <?= $incident['incident_type'] == 'Typhoon' ? 'selected' : ''; ?>>Typhoon</option>
                 </select>
             </div>
 
@@ -280,11 +274,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div style="color: whitesmoke;" class="form-group">
                 <label for="incident_description">Description</label>
                 <textarea name="incident_description" class="form-control"><?= htmlspecialchars($incident['incident_description']); ?></textarea>
-            </div>
-
-            <div style="color: whitesmoke;" class="form-group">
-                <label for="incident_location">Location</label>
-                <input type="text" class="form-control" id="incident_location" name="incident_location" value="<?= htmlspecialchars($incident['incident_location']); ?>" required>
             </div>
 
             <div style="color: whitesmoke;" class="form-group">
