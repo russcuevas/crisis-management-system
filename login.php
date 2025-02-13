@@ -15,7 +15,7 @@ if (isset($_SESSION['admin_id'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $userType = $_POST['user_type']; // Get selected user type
+    $userType = $_POST['user_type'];
 
     if ($userType == 'user') {
         $query = "SELECT * FROM tbl_users WHERE email = :email";

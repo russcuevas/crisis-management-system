@@ -123,3 +123,8 @@ add another admin account - TODO
 4. YUNG LOG IN FORM AT ADMIN FORM PO AY DAPAT ISANG LOCALHOST NALANG PO, bale dun nalang po mamimili if si admin or si user po yung mag lolog-in or register po. - CHECK
 5. KAY USER naman po- sa report ng users isang location lng po sana, bale aalisin isang yung location total meron naman po ma pi-pin pag mag pin sa map hehehe - CHECK
 6. Users feedback- alisin nalang po yung "question" hehe - CHECK
+
+notify - each entities if user post*
+sashboard - each entities must have
+organized - login page
+approval - by entities being requested
