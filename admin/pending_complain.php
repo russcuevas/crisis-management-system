@@ -147,7 +147,7 @@ $unread_count = $result_count_notifications['unread_count'];
                     <li>
                         <a href="manage_admin.php">
                             <i class="material-icons">admin_panel_settings</i>
-                            <span>Admin</span>
+                            <span>Responders</span>
                         </a>
                     </li>
                     <li>

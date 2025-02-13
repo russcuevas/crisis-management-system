@@ -11,19 +11,23 @@ if (!isset($admin_id)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
+    $fullname = trim($_POST['fullname']);
+    $type = trim($_POST['type']);
 
     $hashed_password = sha1($password);
 
-    $insert_admin = "INSERT INTO `tbl_admin` 
-                    (`email`, `password`) 
-                    VALUES (:email, :password)";
+    $insert_admin = "INSERT INTO `tbl_responders` 
+                    (`email`, `password`, `fullname`, `type`) 
+                    VALUES (:email, :password, :fullname, :type)";
 
     $stmt = $conn->prepare($insert_admin);
     $stmt->bindParam(':email', $email);
     $stmt->bindParam(':password', $hashed_password);
+    $stmt->bindParam(':fullname', $fullname);
+    $stmt->bindParam(':type', $type);
 
     if ($stmt->execute()) {
-        $_SESSION['success'] = "New admin added successfully.";
+        $_SESSION['success'] = "New responders added successfully.";
         header('Location: manage_admin.php');
         exit();
     } else {
@@ -174,7 +178,7 @@ $unread_count = $result_count_notifications['unread_count'];
                     <li class="active">
                         <a href="manage_admin.php">
                             <i class="material-icons">admin_panel_settings</i>
-                            <span>Admin</span>
+                            <span>Responders</span>
                         </a>
                     </li>
 
@@ -265,9 +269,9 @@ $unread_count = $result_count_notifications['unread_count'];
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
                     <li><a href="manage_admin.php"><i style="font-size: 20px;" class="material-icons">admin_panel_settings</i>
-                            Admin Management</a></li>
+                            Responders Management</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">edit</i>
-                        Add Admin
+                        Add Responders
                     </li>
                 </ol>
             </div>
@@ -275,10 +279,29 @@ $unread_count = $result_count_notifications['unread_count'];
                 <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                     <div class="card">
                         <div class="header">
-                            <h2>ADD ADMIN</h2>
+                            <h2>ADD RESPONDERS</h2>
                         </div>
                         <div class="body">
                             <form id="form_validation" method="POST">
+                                <div class="form-group form-float">
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Responders Type:</label>
+                                    <div class="form-line">
+                                        <select class="form-select" id="type" name="type" required>
+                                            <option value="Philippine Coast Guard">Philippine Coast Guard</option>
+                                            <option value="Philippine National Police">Philippine National Police</option>
+                                            <option value="Bureau of Fire">Bureau of Fire</option>
+                                            <option value="Provincial Health Office">Provincial Health Office</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Fullname:</label>
+                                    <div class="form-line">
+                                        <input type="fullname" class="form-control" name="fullname" required>
+                                    </div>
+                                </div>
+
                                 <div class="form-group form-float">
                                     <label style="color: #212529; font-weight: 600;" class="form-label">Email</label>
                                     <div class="form-line">
@@ -294,7 +317,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                 </div>
 
                                 <div class="align-right">
-                                    <button type="submit" class="btn bg-red waves-effect">Add admin</button>
+                                    <button type="submit" class="btn bg-red waves-effect">Add responders</button>
                                 </div>
                             </form>
                         </div>

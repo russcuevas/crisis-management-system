@@ -8,9 +8,9 @@ if (!isset($admin_id)) {
 }
 
 // READ USER
-$get_users = "SELECT * FROM `tbl_admin`";
+$get_users = "SELECT * FROM `tbl_responders`";
 $get_stmt = $conn->query($get_users);
-$admins = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
+$responders = $get_stmt->fetchAll(PDO::FETCH_ASSOC);
 // END READ USER
 
 // applicable to all page
@@ -152,7 +152,7 @@ $unread_count = $result_count_notifications['unread_count'];
                     <li class="active">
                         <a href="manage_admin.php">
                             <i class="material-icons">admin_panel_settings</i>
-                            <span>Admin</span>
+                            <span>Responders</span>
                         </a>
                     </li>
 
@@ -245,7 +245,7 @@ $unread_count = $result_count_notifications['unread_count'];
                     <li><a href="dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
                             Dashboard</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">admin_panel_settings</i>
-                        Admin Management
+                        Responders Management
                     </li>
                 </ol>
             </div>
@@ -257,12 +257,12 @@ $unread_count = $result_count_notifications['unread_count'];
                         <div class="header">
                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
-                                    Admin Management
+                                    Responders Management
                                 </h2>
                                 <div id="print-container">
                                     <a href="add_admin.php" class="btn bg-red waves-effect btn-sm">
                                         <i class="material-icons">admin_panel_settings</i>
-                                        <span>ADD ADMIN +</span>
+                                        <span>ADD RESPONDERS +</span>
                                     </a>
                                 </div>
                             </div>
@@ -291,47 +291,20 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <thead>
                                         <tr>
                                             <th>Email</th>
+                                            <th>Fullname</th>
+                                            <th>Type</th>
                                             <th>Created At</th>
                                             <th>Updated At</th>
-                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($admins as $admin) : ?>
+                                        <?php foreach ($responders as $responder) : ?>
                                             <tr>
-                                                <td><?php echo $admin['email'] ?></td>
-                                                <td><?php echo $admin['created_at'] ?></td>
-                                                <td><?php echo $admin['updated_at'] ?></td>
-                                                <td>
-                                                    <a class="btn btn-warning" href="update_admin.php?id=<?php echo $admin['id']; ?>">UPDATE <i class="fa fa-edit"></i></a>
-                                                    <a class="btn btn-danger" href="javascript:void(0);" data-toggle="modal" data-target="#deleteAdminModal" onclick="setAdminId(<?php echo $admin['id']; ?>)">
-                                                        DELETE <i class="fa fa-trash"></i>
-                                                    </a>
-
-                                                    <!-- DELETE USER MODAL -->
-                                                    <div class="modal fade" id="deleteAdminModal" tabindex="-1" role="dialog" aria-labelledby="deleteAdminModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="deleteAdminModalLabel">Confirm Deletion</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    Are you sure you want to delete this admin? all records will also deleted
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <form id="deleteAdminForm" method="POST" action="delete_admin.php">
-                                                                        <input type="hidden" name="id" id="admin_id_delete">
-                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                                                    </form>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                <td><?php echo $responder['email'] ?></td>
+                                                <td><?php echo $responder['fullname'] ?></td>
+                                                <td><?php echo $responder['type'] ?></td>
+                                                <td><?php echo $responder['created_at'] ?></td>
+                                                <td><?php echo $responder['updated_at'] ?></td>
                                             </tr>
                                         <?php endforeach ?>
                                     </tbody>
