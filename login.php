@@ -22,7 +22,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($userType == 'admin') {
         $query = "SELECT * FROM tbl_admin WHERE email = :email";
     } else {
-        // For Responders
         $query = "SELECT * FROM tbl_responders WHERE email = :email AND type = :userType";
     }
 
