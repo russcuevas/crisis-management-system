@@ -19,16 +19,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($userType == 'user') {
         $query = "SELECT * FROM tbl_users WHERE email = :email";
-    } else {
+    } elseif ($userType == 'admin') {
         $query = "SELECT * FROM tbl_admin WHERE email = :email";
+    } else {
+        // For Responders
+        $query = "SELECT * FROM tbl_responders WHERE email = :email AND type = :userType";
     }
 
     $stmt = $conn->prepare($query);
     $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+
+    if ($userType !== 'user' && $userType !== 'admin') {
+        $stmt->bindParam(':userType', $userType, PDO::PARAM_STR);
+    }
+
     $stmt->execute();
 
     if ($stmt->rowCount() == 1) {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (sha1($password) === $user['password']) {
             if ($userType == 'user') {
                 if ($user['is_verified'] == 1) {
@@ -41,9 +50,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     header('Location: login.php');
                     exit();
                 }
-            } else {
+            } elseif ($userType == 'admin') {
                 $_SESSION['admin_id'] = $user['id'];
                 header('Location: admin/dashboard.php');
+                exit();
+            } else {
+                $_SESSION['responder_id'] = $user['id'];
+                $_SESSION['responder_type'] = $user['type'];
+
+                switch ($user['type']) {
+                    case 'Philippine Coast Guard':
+                        header('Location: entities/pcg/pcg_dashboard.php');
+                        break;
+                    case 'Philippine National Police':
+                        header('Location: entities/pnp/pnp_dashboard.php');
+                        break;
+                    case 'Bureau of Fire':
+                        header('Location: entities/bfp/bfp_dashboard.php');
+                        break;
+                    case 'Provincial Health Office':
+                        header('Location: entities/pho/pho_dashboard.php');
+                        break;
+                    default:
+                        header('Location: login.php');
+                        exit();
+                }
                 exit();
             }
         }
@@ -54,6 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -103,8 +135,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="form-line">
                             <select name="user_type" class="form-control" required>
                                 <option value="" disabled selected>Select Type</option>
-                                <option value="user">User</option>
                                 <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                                <option value="Philippine Coast Guard">Philippine Coast Guard</option>
+                                <option value="Philippine National Police">Philippine National Police</option>
+                                <option value="Bureau of fire">Bureau Of Fire</option>
+                                <option value="Provincial Health Office">Provincial Health Office</option>
                             </select>
                         </div>
                     </div>
