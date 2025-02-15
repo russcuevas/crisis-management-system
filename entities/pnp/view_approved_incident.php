@@ -26,14 +26,14 @@ if (isset($_GET['incident_id'])) {
     $incident = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$incident) {
-        $_SESSION['pending_errors'] = "Incident Not Found";
-        header('location:pnp_pending.php');
+        $_SESSION['approved_errors'] = "Incident Not Found";
+        header('location:pnp_approved.php');
         exit();
     }
 
-    if ($incident['status'] === 'Approved') {
-        $_SESSION['pending_errors'] = "This incident has already been approved";
-        header('location:pnp_pending.php');
+    if ($incident['status'] === 'Pending') {
+        $_SESSION['approved_errors'] = "This incident has already been approved";
+        header('location:pnp_approved.php');
         exit();
     }
 
@@ -59,76 +59,6 @@ $incident_proof = json_decode($incident['incident_proof'], true);
 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
-    //update incidents to approve
-    if (isset($_POST['approve'])) {
-        $sql = "SELECT * FROM tbl_incidents WHERE incident_id = :incident_id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
-        $stmt->execute();
-        $incident = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $sql = "UPDATE tbl_incidents SET status = 'Approved' WHERE incident_id = :incident_id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        $insert_sql = "INSERT INTO tbl_reports (
-user_id,
-incident_type,
-incident_description,
-incident_location,
-incident_landmark,
-incident_datetime,
-incident_location_map,
-status,
-created_at,
-updated_at,
-latitude,
-longitude
-) VALUES (
-:user_id,
-:incident_type,
-:incident_description,
-:incident_location,
-:incident_landmark,
-:incident_datetime,
-:incident_location_map,
-'Approved',
-:created_at,
-:updated_at,
-:latitude,
-:longitude
-)";
-
-        $insert_stmt = $conn->prepare($insert_sql);
-        $insert_stmt->bindParam(':user_id', $incident['user_id'], PDO::PARAM_INT);
-        $insert_stmt->bindParam(':incident_type', $incident['incident_type'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':incident_description', $incident['incident_description'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':incident_location', $incident['incident_location'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':incident_landmark', $incident['incident_landmark'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':incident_datetime', $incident['incident_datetime'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':incident_location_map', $incident['incident_location_map'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':created_at', $incident['created_at'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':updated_at', $incident['updated_at'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':latitude', $incident['latitude'], PDO::PARAM_STR);
-        $insert_stmt->bindParam(':longitude', $incident['longitude'], PDO::PARAM_STR);
-
-        $insert_stmt->execute();
-
-        //update notification description
-        $update_notifications_sql = "UPDATE tbl_notifications
-SET notification_description = 'Request approved'
-WHERE incident_id = :incident_id";
-        $update_notifications_stmt = $conn->prepare($update_notifications_sql);
-        $update_notifications_stmt->bindParam(':incident_id', $incident_id, PDO::PARAM_INT);
-        $update_notifications_stmt->execute();
-
-        $_SESSION['pending_success'] = 'Incident approved successfully.';
-        header("Location: pnp_pending.php");
-        exit();
-    }
-
     // Delete the incidents
     if (isset($_POST['delete'])) {
         $incident_proof = json_decode($incident['incident_proof'], true);
@@ -147,8 +77,8 @@ WHERE incident_id = :incident_id";
             }
         }
 
-        $_SESSION['pending_success'] = 'Incident deleted successfully.';
-        header("Location: pnp_pending.php");
+        $_SESSION['approved_success'] = 'Incident deleted successfully.';
+        header("Location: pnp_approved.php");
         exit();
     }
 }
@@ -310,12 +240,12 @@ $unread_count = $result_count_notifications['unread_count'];
                             <span>Posts Incedents</span>
                         </a>
                         <ul class="ml-menu">
-                            <li class="active">
+                            <li>
                                 <a href="pnp_pending.php">
                                     <span>Pending</span>
                                 </a>
                             </li>
-                            <li>
+                            <li class="active">
                                 <a href="pnp_approved.php">
                                     <span>Approved</span>
                                 </a>
@@ -369,7 +299,7 @@ $unread_count = $result_count_notifications['unread_count'];
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
                     <li><a href="pnp_dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i> Dashboard</a></li>
-                    <li><a href="pending_complain.php"><i style="font-size: 20px;" class="material-icons">crisis_alert</i> Pending Complaints</a></li>
+                    <li><a href="pnp_approved.php"><i style="font-size: 20px;" class="material-icons">check</i> Approved Complaints</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">visibility</i> View Incident</li>
                 </ol>
             </div>
@@ -461,15 +391,14 @@ $unread_count = $result_count_notifications['unread_count'];
                                     </tr>
                                     <tr>
                                         <th>Status</th>
-                                        <td style="color: orange; font-weight: 900;"><?php echo htmlspecialchars($incident['status']); ?></td>
+                                        <td style="color: green; font-weight: 900;"><?php echo htmlspecialchars($incident['status']); ?></td>
                                     </tr>
                                 </table>
                             </div>
                             <div style="display: flex !important; justify-content: end; gap: 10px;">
                                 <form method="POST">
-                                    <button type="submit" name="approve" class="btn btn-success">Approve</button>
                                     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmDeleteModal">Delete</button>
-                                    <a href="pending_complain.php" class="btn btn-primary">Go back</a>
+                                    <a href="pnp_approved.php" class="btn btn-primary">Go back</a>
                                 </form>
                             </div>
                         </div>

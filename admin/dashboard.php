@@ -7,11 +7,11 @@ if (!isset($admin_id)) {
     header('location:admin_login.php');
 }
 // GET THE ADMIN
-$get_total_admin = "SELECT COUNT(*) AS total_admin FROM `tbl_admin`";
-$stmt_total_admin = $conn->prepare($get_total_admin);
-$stmt_total_admin->execute();
-$result_total_admin = $stmt_total_admin->fetch(PDO::FETCH_ASSOC);
-$total_admin = $result_total_admin['total_admin'];
+$get_total_responders = "SELECT COUNT(*) AS total_responders FROM `tbl_responders`";
+$stmt_total_responders = $conn->prepare($get_total_responders);
+$stmt_total_responders->execute();
+$result_total_responders = $stmt_total_responders->fetch(PDO::FETCH_ASSOC);
+$total_responders = $result_total_responders['total_responders'];
 // END GET TOTAL ADMIN
 
 // GET THE USERS
@@ -292,7 +292,7 @@ $unread_count = $result_count_notifications['unread_count'];
                         </div>
                         <div class="content">
                             <div class="text" style="color: white !important;">RESPONDERS</div>
-                            <div class="" style="font-size: 20px;"><?php echo $total_admin ?></div>
+                            <div class="" style="font-size: 20px;"><?php echo $total_responders ?></div>
                         </div>
                     </div>
                 </div>

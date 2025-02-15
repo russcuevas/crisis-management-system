@@ -284,19 +284,19 @@ $unread_count = $result_count_notifications['unread_count'];
                         <div class="body">
                             <form id="form_validation" method="POST">
                                 <div class="form-group form-float">
-                                    <label style="color: #212529; font-weight: 600;" class="form-label">Responders Type:</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Department Type:</label>
                                     <div class="form-line">
                                         <select class="form-select" id="type" name="type" required>
-                                            <option value="Philippine Coast Guard">Philippine Coast Guard</option>
-                                            <option value="Philippine National Police">Philippine National Police</option>
-                                            <option value="Bureau of Fire">Bureau of Fire</option>
-                                            <option value="Provincial Health Office">Provincial Health Office</option>
+                                            <option value="Philippine Coast Guard">Philippine Coast Guard - PCG</option>
+                                            <option value="Philippine National Police">Philippine National Police - PNP</option>
+                                            <option value="Bureau of Fire">Bureau of Fire Protection - BFP</option>
+                                            <option value="Provincial Health Office">Provincial Health Office - PHO</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="form-group form-float">
-                                    <label style="color: #212529; font-weight: 600;" class="form-label">Office Name:</label>
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Fullname:</label>
                                     <div class="form-line">
                                         <input type="fullname" class="form-control" name="fullname" required>
                                     </div>

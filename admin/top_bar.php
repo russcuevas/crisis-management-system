@@ -6,7 +6,7 @@
                 <a href="javascript:void(0);" class="bars"></a>
                 <a id="app-title" style="display:flex;align-items:center" class="navbar-brand" href="dashboard.php">
                     <img id="bcas-logo" style="width:45px;display:inline;margin-right:10px; border-radius: 50px;" src="images/admin/crisis.jpg" />
-                    <span>CRISIS MANAGEMENT SYSTEM</span>
+                    <span>Provincial Disaster Risk Reduction <br> and Management Office</span>
                 </a>
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse">

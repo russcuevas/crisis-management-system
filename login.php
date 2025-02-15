@@ -134,12 +134,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="form-line">
                             <select name="user_type" class="form-control" required>
                                 <option value="" disabled selected>Select Type</option>
-                                <option value="admin">Admin</option>
+                                <option value="admin">Admin / PDRRMO</option>
                                 <option value="user">User</option>
-                                <option value="Philippine Coast Guard">Philippine Coast Guard</option>
-                                <option value="Philippine National Police">Philippine National Police</option>
-                                <option value="Bureau of fire">Bureau Of Fire</option>
-                                <option value="Provincial Health Office">Provincial Health Office</option>
+                                <option value="Philippine Coast Guard">Philippine Coast Guard - PCG</option>
+                                <option value="Philippine National Police">Philippine National Police - PNP</option>
+                                <option value="Bureau of fire">Bureau Of Fire Protection - BFP</option>
+                                <option value="Provincial Health Office">Provincial Health Office - PHO</option>
                             </select>
                         </div>
                     </div>

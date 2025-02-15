@@ -8,12 +8,33 @@ if (!isset($responder_id)) {
 }
 
 // GET THE TOTAL INCIDENTS PENDING
-$get_total_incidents_pending = "SELECT COUNT(*) AS total_incidents_pending FROM `tbl_incidents` WHERE status = 'Pending'";
-$stmt_total_incidents_pending = $conn->prepare($get_total_incidents_pending);
+$sql = "SELECT type FROM tbl_responders WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$responder_id]);
+$responder = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$responder) {
+    die("Responder not found.");
+}
+
+$responder_type = $responder['type'];
+
+$sql = "SELECT id FROM tbl_responders WHERE type = ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$responder_type]);
+$similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
+
+$sql = "SELECT COUNT(*) AS total_incidents_pending 
+        FROM `tbl_incidents` 
+        WHERE status = 'Pending' 
+        AND ($pnp_conditions)";
+
+$stmt_total_incidents_pending = $conn->prepare($sql);
 $stmt_total_incidents_pending->execute();
-$restult_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
-$total_incidents_pending = $restult_total_incidents_pending['total_incidents_pending'];
-// END GET TOTAL INCIDENTS PENDING
+$result_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
+
+$total_incidents_pending = $result_total_incidents_pending['total_incidents_pending'];
 
 // GET THE TOTAL INCIDENTS APPROVED
 $get_total_incidents_approved = "SELECT COUNT(*) AS get_total_incidents_approved FROM `tbl_incidents` WHERE status = 'Approved'";

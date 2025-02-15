@@ -271,18 +271,28 @@ $responders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </div>
 
+                        <?php
+                        $unique_types = [];
+                        ?>
+
                         <div class="form-group form-float" style="margin-top: 30px !important;">
                             <label style="color: #212529; font-weight: 600;" class="form-label">Select Respondents</label>
                             <div class="form-line">
                                 <select class="form-select" id="respondents_id" name="respondents_id[]" multiple required>
                                     <?php foreach ($responders as $responder): ?>
-                                        <option value="<?php echo $responder['id']; ?>">
-                                            <?php echo htmlspecialchars($responder['type']); ?>
-                                        </option>
+                                        <?php
+                                        if (!isset($unique_types[$responder['type']])):
+                                            $unique_types[$responder['type']] = $responder['id'];
+                                        ?>
+                                            <option value="<?php echo htmlspecialchars($responder['id']); ?>">
+                                                <?php echo htmlspecialchars($responder['type']); ?>
+                                            </option>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                         </div>
+
 
 
                         <div class="form-group form-float" id="otherIncidentInput" style="display: none;">

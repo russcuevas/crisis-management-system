@@ -291,7 +291,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <thead>
                                         <tr>
                                             <th>Email</th>
-                                            <th>Office Name</th>
+                                            <th>Fullname</th>
                                             <th>Responders Type</th>
                                             <th>Created At</th>
                                             <th>Updated At</th>

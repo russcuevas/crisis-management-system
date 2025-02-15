@@ -6,7 +6,7 @@
             <a href="javascript:void(0);" class="bars" style="color: black;"></a>
             <a id="app-title" style="display:flex;align-items:center" class="navbar-brand" href="pnp_dashboard.php">
                 <img id="bcas-logo" style="background-color: none !important; width:45px;display:inline;margin-right:10px; border-radius: 50px;" src="images/pnp-logo.png" />
-                <span style="color: black;">PNP - Dashboard</span>
+                <span style="color: black;">Philippine National Police</span>
             </a>
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">
