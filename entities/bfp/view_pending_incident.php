@@ -27,13 +27,13 @@ if (isset($_GET['incident_id'])) {
 
     if (!$incident) {
         $_SESSION['pending_errors'] = "Incident Not Found";
-        header('location:pcg_pending.php');
+        header('location:bfp_pending.php');
         exit();
     }
 
     if ($incident['status'] === 'Approved') {
         $_SESSION['pending_errors'] = "This incident has already been approved";
-        header('location:pcg_pending.php');
+        header('location:bfp_pending.php');
         exit();
     }
 
@@ -125,7 +125,7 @@ WHERE incident_id = :incident_id";
         $update_notifications_stmt->execute();
 
         $_SESSION['pending_success'] = 'Incident approved successfully.';
-        header("Location: pcg_pending.php");
+        header("Location: bfp_pending.php");
         exit();
     }
 
@@ -148,7 +148,7 @@ WHERE incident_id = :incident_id";
         }
 
         $_SESSION['pending_success'] = 'Incident deleted successfully.';
-        header("Location: pcg_pending.php");
+        header("Location: bfp_pending.php");
         exit();
     }
 }
@@ -339,7 +339,7 @@ $unread_count = $result_count_notifications['unread_count'];
             <div class="menu">
                 <ul class="list">
                     <li class="">
-                        <a href="pcg_dashboard.php">
+                        <a href="bfp_dashboard.php">
                             <i class="material-icons">home</i>
                             <span>Dashboard</span>
                         </a>
@@ -352,12 +352,12 @@ $unread_count = $result_count_notifications['unread_count'];
                         </a>
                         <ul class="ml-menu">
                             <li class="active">
-                                <a href="pcg_pending.php">
+                                <a href="bfp_pending.php">
                                     <span>Pending</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="pcg_approved.php">
+                                <a href="bfp_approved.php">
                                     <span>Approved</span>
                                 </a>
                             </li>
@@ -409,8 +409,8 @@ $unread_count = $result_count_notifications['unread_count'];
         <div class="container-fluid">
             <div class="block-header">
                 <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
-                    <li><a href="pcg_dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i> Dashboard</a></li>
-                    <li><a href="pcg_pending.php"><i style="font-size: 20px;" class="material-icons">crisis_alert</i> Pending Complaints</a></li>
+                    <li><a href="bfp_dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i> Dashboard</a></li>
+                    <li><a href="bfp_pending.php"><i style="font-size: 20px;" class="material-icons">crisis_alert</i> Pending Complaints</a></li>
                     <li class="active"><i style="font-size: 20px;" class="material-icons">visibility</i> View Incident</li>
                 </ol>
             </div>
@@ -510,7 +510,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                 <form method="POST">
                                     <button type="submit" name="approve" class="btn btn-success">Approve</button>
                                     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#confirmDeleteModal">Delete</button>
-                                    <a href="pcg_pending.php" class="btn btn-primary">Go back</a>
+                                    <a href="bfp_pending.php" class="btn btn-primary">Go back</a>
                                 </form>
                             </div>
                         </div>
