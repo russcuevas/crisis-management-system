@@ -4,9 +4,9 @@
         <div class="navbar-header">
             <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false" style="color: black;"></a>
             <a href="javascript:void(0);" class="bars" style="color: black;"></a>
-            <a id="app-title" style="display:flex;align-items:center" class="navbar-brand" href="pcg_dashboard.php">
-                <img id="bcas-logo" style="background-color: none !important; width:45px;display:inline;margin-right:10px; border-radius: 50px;" src="images/pcg-logo.png" />
-                <span style="color: black;">Philippine Coast Guard</span>
+            <a id="app-title" style="display:flex;align-items:center" class="navbar-brand" href="bfp_dashboard.php">
+                <img id="bcas-logo" style="background-color: none !important; width:45px;display:inline;margin-right:10px; border-radius: 50px;" src="images/bfp-logo.png" />
+                <span style="color: black;">Bureau of Fire Protection</span>
             </a>
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">

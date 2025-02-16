@@ -2,13 +2,13 @@
 include '../../database/connection.php';
 
 session_start();
-$responder_id = $_SESSION['responder_id'] ?? null;
-if (!$responder_id) {
+
+$responder_id = $_SESSION['responder_id'];
+if (!isset($responder_id)) {
     header('location:../../login.php');
     exit();
 }
 
-// Fetch responder type
 $sql = "SELECT type FROM tbl_responders WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_id]);
@@ -20,53 +20,23 @@ if (!$responder) {
 
 $responder_type = $responder['type'];
 
-// Fetch all responders with the same type
 $sql = "SELECT id FROM tbl_responders WHERE type = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_type]);
 $similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-if (empty($similar_responders)) {
-    die("No responders found for the given type.");
-}
-
-// Construct JSON_CONTAINS conditions for filtering incidents based on responder ID
 $pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
 
-// Get the total pending incidents assigned to responders of the same type
-$sql_pending = "SELECT COUNT(*) AS total_incidents_pending 
-                FROM `tbl_incidents` 
-                WHERE status = 'Pending' 
-                AND ($pnp_conditions)";
+$sql = "SELECT tbl_incidents.*, tbl_users.fullname 
+        FROM tbl_incidents 
+        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
+        WHERE tbl_incidents.status = 'pending' 
+        AND ($pnp_conditions)";
 
-$stmt_pending = $conn->prepare($sql_pending);
-$stmt_pending->execute();
-$result_pending = $stmt_pending->fetch(PDO::FETCH_ASSOC);
-$total_incidents_pending = $result_pending['total_incidents_pending'];
+$complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-// Get the total approved incidents assigned to responders of the same type
-$sql_approved = "SELECT COUNT(*) AS total_incidents_approved 
-                 FROM `tbl_incidents` 
-                 WHERE status = 'Approved' 
-                 AND ($pnp_conditions)";
-
-$stmt_approved = $conn->prepare($sql_approved);
-$stmt_approved->execute();
-$result_approved = $stmt_approved->fetch(PDO::FETCH_ASSOC);
-$total_incidents_approved = $result_approved['total_incidents_approved'];
-
-// Fetch pending complaints assigned to the responder type
-$sql_complaints = "SELECT tbl_incidents.*, tbl_users.fullname 
-                   FROM tbl_incidents 
-                   LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-                   WHERE tbl_incidents.status = 'Pending' 
-                   AND ($pnp_conditions)";
-
-$stmt_complaints = $conn->prepare($sql_complaints);
-$stmt_complaints->execute();
-$complaints = $stmt_complaints->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch notifications only for incidents assigned to the logged-in responder type
+// applicable to all page
+// fetching notifs
 $sql_notifications = "
     SELECT 
         tbl_notifications.id AS notification_id,
@@ -138,7 +108,6 @@ $stmt_count_notifications = $conn->prepare($sql_count_notifications);
 $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -198,7 +167,7 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Overlay For Sidebars -->
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
-
+    <!-- Top Bar -->
     <!-- TOP BAR -->
     <?php include('top_bar.php')  ?>
     <!-- END TOP BAR -->
@@ -207,20 +176,20 @@ $unread_count = $result_count_notifications['unread_count'];
         <aside id="leftsidebar" class="sidebar">
             <div class="menu">
                 <ul class="list">
-                    <li class="active">
+                    <li class="">
                         <a href="bfp_dashboard.php">
                             <i class="material-icons">home</i>
                             <span>Dashboard</span>
                         </a>
                     </li>
 
-                    <li>
+                    <li class="active">
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">crisis_alert</i>
                             <span>Posts Incedents</span>
                         </a>
                         <ul class="ml-menu">
-                            <li>
+                            <li class="active">
                                 <a href="bfp_pending.php">
                                     <span>Pending</span>
                                 </a>
@@ -268,43 +237,93 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
         </aside>
+
+
+
         <!-- #END# Right Sidebar -->
     </section>
 
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
-                <h2 style="font-size: 25px; font-weight: 900; color: #bc1823 !important;">DASHBOARD</h2>
+                <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
+                    <li><a href="bfp_dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
+                            Dashboard</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">crisis_alert</i>
+                        Posts Incedents
+                    </li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">pending</i>
+                        Pending Complain
+                    </li>
+                </ol>
             </div>
-            <!-- Widgets -->
-            <div class="row clearfix">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='bfp_pending.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">pending</i>
-                        </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">PENDING COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_pending ?></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='bfp_approved.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">check</i>
+            <!-- CPU Usage -->
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
+                                PENDING COMPLAIN
+                            </h2>
                         </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">APPROVE COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_approved ?></div>
+                        <div class="body">
+
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['pending_success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['pending_success']; ?>
+                                    <?php unset($_SESSION['pending_success']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['pending_errors'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['pending_errors']; ?>
+                                    <?php unset($_SESSION['pending_errors']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Complainant</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Landmark</th>
+                                            <th>Date/Time</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($complaints as $complaint): ?>
+                                            <tr>
+                                                <td><?php echo $complaint['fullname']; ?></td>
+                                                <td><?php echo $complaint['incident_type']; ?></td>
+                                                <td><?php echo $complaint['incident_description']; ?></td>
+                                                <td><?php echo $complaint['incident_location_map']; ?></td>
+                                                <td><?php echo $complaint['incident_landmark']; ?></td>
+                                                <td><?php echo $complaint['incident_datetime']; ?></td>
+                                                <td style="color: orange; font-weight: 900;"><?php echo $complaint['status']; ?></td>
+                                                <td>
+                                                    <a href="view_pending_incident.php?incident_id=<?php echo $complaint['incident_id']; ?>" class="btn btn-warning sm">View Information</a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
     </section>
-
-
 
     <!-- Jquery Core Js -->
     <script src="../plugins/jquery/jquery.min.js"></script>
@@ -317,7 +336,7 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Jquery Validation Plugin Css -->
     <script src="../plugins/jquery-validation/jquery.validate.js"></script>
-    <script src="../js/pages/forms/form-validation.js"></script>
+    <script src="js/pages/forms/form-validation.js"></script>
 
     <!-- Waves Effect Plugin Js -->
     <script src="../plugins/node-waves/waves.js"></script>
