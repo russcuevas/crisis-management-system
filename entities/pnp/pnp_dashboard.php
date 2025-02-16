@@ -2,12 +2,13 @@
 include '../../database/connection.php';
 
 session_start();
-$responder_id = $_SESSION['responder_id'];
-if (!isset($responder_id)) {
+$responder_id = $_SESSION['responder_id'] ?? null;
+if (!$responder_id) {
     header('location:../../login.php');
+    exit();
 }
 
-// GET THE TOTAL INCIDENTS PENDING
+// Fetch responder type
 $sql = "SELECT type FROM tbl_responders WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_id]);
@@ -19,54 +20,53 @@ if (!$responder) {
 
 $responder_type = $responder['type'];
 
+// Fetch all responders with the same type
 $sql = "SELECT id FROM tbl_responders WHERE type = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_type]);
 $similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($similar_responders)) {
+    die("No responders found for the given type.");
+}
+
+// Construct JSON_CONTAINS conditions for filtering incidents based on responder ID
 $pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
 
-$sql = "SELECT COUNT(*) AS total_incidents_pending 
-        FROM `tbl_incidents` 
-        WHERE status = 'Pending' 
-        AND ($pnp_conditions)";
+// Get the total pending incidents assigned to responders of the same type
+$sql_pending = "SELECT COUNT(*) AS total_incidents_pending 
+                FROM `tbl_incidents` 
+                WHERE status = 'Pending' 
+                AND ($pnp_conditions)";
 
-$stmt_total_incidents_pending = $conn->prepare($sql);
-$stmt_total_incidents_pending->execute();
-$result_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
+$stmt_pending = $conn->prepare($sql_pending);
+$stmt_pending->execute();
+$result_pending = $stmt_pending->fetch(PDO::FETCH_ASSOC);
+$total_incidents_pending = $result_pending['total_incidents_pending'];
 
-$total_incidents_pending = $result_total_incidents_pending['total_incidents_pending'];
+// Get the total approved incidents assigned to responders of the same type
+$sql_approved = "SELECT COUNT(*) AS total_incidents_approved 
+                 FROM `tbl_incidents` 
+                 WHERE status = 'Approved' 
+                 AND ($pnp_conditions)";
 
-// GET THE TOTAL INCIDENTS APPROVED
-$get_total_incidents_approved = "SELECT COUNT(*) AS get_total_incidents_approved FROM `tbl_incidents` WHERE status = 'Approved'";
-$stmt_get_total_incidents_approved = $conn->prepare($get_total_incidents_approved);
-$stmt_get_total_incidents_approved->execute();
-$restult_get_total_incidents_approved = $stmt_get_total_incidents_approved->fetch(PDO::FETCH_ASSOC);
-$get_total_incidents_approved = $restult_get_total_incidents_approved['get_total_incidents_approved'];
-// END GET TOTAL INCIDENTS APPROVED
+$stmt_approved = $conn->prepare($sql_approved);
+$stmt_approved->execute();
+$result_approved = $stmt_approved->fetch(PDO::FETCH_ASSOC);
+$total_incidents_approved = $result_approved['total_incidents_approved'];
 
-// GET PENDING COMPLAINTS
-$sql = "SELECT tbl_incidents.*, tbl_users.fullname 
-        FROM tbl_incidents 
-        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-        WHERE tbl_incidents.status = 'pending'";
-$complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-// END GET PENDING COMPLAINTS
+// Fetch pending complaints assigned to the responder type
+$sql_complaints = "SELECT tbl_incidents.*, tbl_users.fullname 
+                   FROM tbl_incidents 
+                   LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
+                   WHERE tbl_incidents.status = 'Pending' 
+                   AND ($pnp_conditions)";
 
+$stmt_complaints = $conn->prepare($sql_complaints);
+$stmt_complaints->execute();
+$complaints = $stmt_complaints->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch fire incidents grouped by month
-$query = "SELECT MONTH(created_at) AS month, COUNT(*) AS fire_incidents 
-          FROM tbl_reports 
-          WHERE incident_type = 'Fire'
-          GROUP BY MONTH(created_at)
-          ORDER BY MONTH(created_at)";
-
-// Prepare and execute the query
-$stmt = $conn->prepare($query);
-$stmt->execute();
-
-
-// applicable to all page
-// fetching notifs
+// Fetch notifications only for incidents assigned to the logged-in responder type
 $sql_notifications = "
     SELECT 
         tbl_notifications.id AS notification_id,
@@ -74,7 +74,7 @@ $sql_notifications = "
         tbl_notifications.user_id AS notification_user_id,
         tbl_notifications.is_view,
         tbl_notifications.created_at AS notification_created_at,
-        tbl_notifications.notification_description,  -- Added notification_description
+        tbl_notifications.notification_description,
         tbl_incidents.incident_type,
         tbl_incidents.incident_description AS incident_description,
         tbl_incidents.status AS incident_status,
@@ -85,14 +85,21 @@ $sql_notifications = "
     FROM tbl_notifications
     LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
     LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
-    WHERE tbl_notifications.is_view = 0  -- Get only unread notifications
+    WHERE tbl_notifications.is_view = 0  -- Only unread notifications
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)  -- Ensuring it is assigned to the responder's type
+    )
     ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->execute();
+$notifications_bells = $stmt_notifications->fetchAll(PDO::FETCH_ASSOC);
 
-
-// function for time notifs
+// Function to format time ago
 function timeAgo($timestamp)
 {
     $created_at = new DateTime($timestamp);
@@ -114,13 +121,23 @@ function timeAgo($timestamp)
     }
 }
 
-// query to notifications that is unread
-$sql_count_notifications = "SELECT COUNT(*) AS unread_count FROM tbl_notifications WHERE is_view = 0";
+// Count unread notifications for this responder type
+$sql_count_notifications = "
+    SELECT COUNT(*) AS unread_count 
+    FROM tbl_notifications
+    WHERE is_view = 0
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)
+    )
+";
+
 $stmt_count_notifications = $conn->prepare($sql_count_notifications);
 $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
-//end applicable to all page
 
 ?>
 <!DOCTYPE html>
@@ -280,7 +297,7 @@ $unread_count = $result_count_notifications['unread_count'];
                         </div>
                         <div class="content">
                             <div class="text" style="color: white !important;">APPROVE COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $get_total_incidents_approved ?></div>
+                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_approved ?></div>
                         </div>
                     </div>
                 </div>

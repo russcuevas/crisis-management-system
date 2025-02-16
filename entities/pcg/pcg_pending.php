@@ -9,6 +9,7 @@ if (!isset($responder_id)) {
     exit();
 }
 
+// Fetch responder type based on the logged-in user
 $sql = "SELECT type FROM tbl_responders WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_id]);
@@ -35,8 +36,7 @@ $sql = "SELECT tbl_incidents.*, tbl_users.fullname
 
 $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-// applicable to all page
-// fetching notifs
+// Fetch notifications only for incidents assigned to the logged-in responder
 $sql_notifications = "
     SELECT 
         tbl_notifications.id AS notification_id,
@@ -44,7 +44,7 @@ $sql_notifications = "
         tbl_notifications.user_id AS notification_user_id,
         tbl_notifications.is_view,
         tbl_notifications.created_at AS notification_created_at,
-        tbl_notifications.notification_description,  -- Added notification_description
+        tbl_notifications.notification_description,
         tbl_incidents.incident_type,
         tbl_incidents.incident_description AS incident_description,
         tbl_incidents.status AS incident_status,
@@ -55,14 +55,21 @@ $sql_notifications = "
     FROM tbl_notifications
     LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
     LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
-    WHERE tbl_notifications.is_view = 0  -- Get only unread notifications
+    WHERE tbl_notifications.is_view = 0  -- Only unread notifications
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)  -- Ensuring it is assigned to the responder's type
+    )
     ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->execute();
+$notifications_bells = $stmt_notifications->fetchAll(PDO::FETCH_ASSOC);
 
-
-// function for time notifs
+// Function to format time ago
 function timeAgo($timestamp)
 {
     $created_at = new DateTime($timestamp);
@@ -84,14 +91,25 @@ function timeAgo($timestamp)
     }
 }
 
-// query to notifications that is unread
-$sql_count_notifications = "SELECT COUNT(*) AS unread_count FROM tbl_notifications WHERE is_view = 0";
+// Count unread notifications for this responder type
+$sql_count_notifications = "
+    SELECT COUNT(*) AS unread_count 
+    FROM tbl_notifications
+    WHERE is_view = 0
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)
+    )
+";
+
 $stmt_count_notifications = $conn->prepare($sql_count_notifications);
 $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
-//end applicable to all page
 ?>
+
 <!DOCTYPE html>
 <html>
 

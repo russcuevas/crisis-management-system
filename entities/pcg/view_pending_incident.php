@@ -153,34 +153,65 @@ WHERE incident_id = :incident_id";
     }
 }
 
-// applicable to all page
-// fetching notifs
+// Fetch responder type
+$sql = "SELECT type FROM tbl_responders WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$responder_id]);
+$responder = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$responder) {
+    die("Responder not found.");
+}
+
+$responder_type = $responder['type'];
+
+// Fetch all responders with the same type
+$sql = "SELECT id FROM tbl_responders WHERE type = ?";
+$stmt = $conn->prepare($sql);
+$stmt->execute([$responder_type]);
+$similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+if (empty($similar_responders)) {
+    die("No responders found for the given type.");
+}
+
+// Construct JSON_CONTAINS conditions for filtering incidents based on responder ID
+$pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
+
+// Fetch notifications only for incidents assigned to the logged-in responder type
 $sql_notifications = "
-SELECT
-tbl_notifications.id AS notification_id,
-tbl_notifications.incident_id,
-tbl_notifications.user_id AS notification_user_id,
-tbl_notifications.is_view,
-tbl_notifications.created_at AS notification_created_at,
-tbl_notifications.notification_description, -- Added notification_description
-tbl_incidents.incident_type,
-tbl_incidents.incident_description AS incident_description,
-tbl_incidents.status AS incident_status,
-tbl_users.id AS user_id,
-tbl_users.fullname AS user_fullname,
-tbl_users.email AS user_email,
-tbl_users.profile_picture AS user_profile_picture
-FROM tbl_notifications
-LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
-LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
-WHERE tbl_notifications.is_view = 0 -- Get only unread notifications
-ORDER BY tbl_notifications.created_at DESC
+    SELECT 
+        tbl_notifications.id AS notification_id,
+        tbl_notifications.incident_id,
+        tbl_notifications.user_id AS notification_user_id,
+        tbl_notifications.is_view,
+        tbl_notifications.created_at AS notification_created_at,
+        tbl_notifications.notification_description,
+        tbl_incidents.incident_type,
+        tbl_incidents.incident_description AS incident_description,
+        tbl_incidents.status AS incident_status,
+        tbl_users.id AS user_id,
+        tbl_users.fullname AS user_fullname,
+        tbl_users.email AS user_email,
+        tbl_users.profile_picture AS user_profile_picture
+    FROM tbl_notifications
+    LEFT JOIN tbl_incidents ON tbl_notifications.incident_id = tbl_incidents.incident_id
+    LEFT JOIN tbl_users ON tbl_notifications.user_id = tbl_users.id
+    WHERE tbl_notifications.is_view = 0  -- Only unread notifications
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)  -- Ensuring it is assigned to the responder's type
+    )
+    ORDER BY tbl_notifications.created_at DESC
 ";
 
-$notifications_bells = $conn->query($sql_notifications)->fetchAll(PDO::FETCH_ASSOC);
+$stmt_notifications = $conn->prepare($sql_notifications);
+$stmt_notifications->execute();
+$notifications_bells = $stmt_notifications->fetchAll(PDO::FETCH_ASSOC);
 
-
-// function for time notifs
+// Function to format time ago
 function timeAgo($timestamp)
 {
     $created_at = new DateTime($timestamp);
@@ -202,13 +233,23 @@ function timeAgo($timestamp)
     }
 }
 
-// query to notifications that is unread
-$sql_count_notifications = "SELECT COUNT(*) AS unread_count FROM tbl_notifications WHERE is_view = 0";
+// Count unread notifications for this responder type
+$sql_count_notifications = "
+    SELECT COUNT(*) AS unread_count 
+    FROM tbl_notifications
+    WHERE is_view = 0
+    AND EXISTS (
+        SELECT 1 
+        FROM tbl_incidents 
+        WHERE tbl_incidents.incident_id = tbl_notifications.incident_id
+        AND ($pnp_conditions)
+    )
+";
+
 $stmt_count_notifications = $conn->prepare($sql_count_notifications);
 $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
-//end applicable to all page
 ?>
 <!DOCTYPE html>
 <html>
