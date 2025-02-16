@@ -12,6 +12,26 @@ if (isset($_SESSION['admin_id'])) {
     exit();
 }
 
+if (isset($_SESSION['responder_id']) && isset($_SESSION['responder_type'])) {
+    switch ($_SESSION['responder_type']) {
+        case 'Philippine Coast Guard':
+            header('Location: entities/pcg/pcg_dashboard.php');
+            exit();
+        case 'Philippine National Police':
+            header('Location: entities/pnp/pnp_dashboard.php');
+            exit();
+        case 'Bureau of Fire':
+            header('Location: entities/bfp/bfp_dashboard.php');
+            exit();
+        case 'Provincial Health Office':
+            header('Location: entities/pho/pho_dashboard.php');
+            exit();
+        default:
+            header('Location: login.php');
+            exit();
+    }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];

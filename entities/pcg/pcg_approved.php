@@ -2,12 +2,13 @@
 include '../../database/connection.php';
 
 session_start();
+
 $responder_id = $_SESSION['responder_id'];
 if (!isset($responder_id)) {
     header('location:../../login.php');
+    exit();
 }
 
-// GET THE TOTAL INCIDENTS PENDING
 $sql = "SELECT type FROM tbl_responders WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_id]);
@@ -23,47 +24,16 @@ $sql = "SELECT id FROM tbl_responders WHERE type = ?";
 $stmt = $conn->prepare($sql);
 $stmt->execute([$responder_type]);
 $similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
 $pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
 
-$sql = "SELECT COUNT(*) AS total_incidents_pending 
-        FROM `tbl_incidents` 
-        WHERE status = 'Pending' 
-        AND ($pnp_conditions)";
-
-$stmt_total_incidents_pending = $conn->prepare($sql);
-$stmt_total_incidents_pending->execute();
-$result_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
-
-$total_incidents_pending = $result_total_incidents_pending['total_incidents_pending'];
-
-// GET THE TOTAL INCIDENTS APPROVED
-$get_total_incidents_approved = "SELECT COUNT(*) AS get_total_incidents_approved FROM `tbl_incidents` WHERE status = 'Approved'";
-$stmt_get_total_incidents_approved = $conn->prepare($get_total_incidents_approved);
-$stmt_get_total_incidents_approved->execute();
-$restult_get_total_incidents_approved = $stmt_get_total_incidents_approved->fetch(PDO::FETCH_ASSOC);
-$get_total_incidents_approved = $restult_get_total_incidents_approved['get_total_incidents_approved'];
-// END GET TOTAL INCIDENTS APPROVED
-
-// GET PENDING COMPLAINTS
 $sql = "SELECT tbl_incidents.*, tbl_users.fullname 
         FROM tbl_incidents 
         LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-        WHERE tbl_incidents.status = 'pending'";
+        WHERE tbl_incidents.status = 'approved' 
+        AND ($pnp_conditions)";
+
 $complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-// END GET PENDING COMPLAINTS
-
-
-// Fetch fire incidents grouped by month
-$query = "SELECT MONTH(created_at) AS month, COUNT(*) AS fire_incidents 
-          FROM tbl_reports 
-          WHERE incident_type = 'Fire'
-          GROUP BY MONTH(created_at)
-          ORDER BY MONTH(created_at)";
-
-// Prepare and execute the query
-$stmt = $conn->prepare($query);
-$stmt->execute();
-
 
 // applicable to all page
 // fetching notifs
@@ -121,7 +91,6 @@ $stmt_count_notifications->execute();
 $result_count_notifications = $stmt_count_notifications->fetch(PDO::FETCH_ASSOC);
 $unread_count = $result_count_notifications['unread_count'];
 //end applicable to all page
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -181,7 +150,7 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Overlay For Sidebars -->
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
-
+    <!-- Top Bar -->
     <!-- TOP BAR -->
     <?php include('top_bar.php')  ?>
     <!-- END TOP BAR -->
@@ -190,14 +159,14 @@ $unread_count = $result_count_notifications['unread_count'];
         <aside id="leftsidebar" class="sidebar">
             <div class="menu">
                 <ul class="list">
-                    <li class="active">
+                    <li class="">
                         <a href="pcg_dashboard.php">
                             <i class="material-icons">home</i>
                             <span>Dashboard</span>
                         </a>
                     </li>
 
-                    <li>
+                    <li class="active">
                         <a href="javascript:void(0);" class="menu-toggle">
                             <i class="material-icons">crisis_alert</i>
                             <span>Posts Incedents</span>
@@ -208,7 +177,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                     <span>Pending</span>
                                 </a>
                             </li>
-                            <li>
+                            <li class="active">
                                 <a href="pcg_approved.php">
                                     <span>Approved</span>
                                 </a>
@@ -251,43 +220,93 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
         </aside>
+
+
+
         <!-- #END# Right Sidebar -->
     </section>
 
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
-                <h2 style="font-size: 25px; font-weight: 900; color: #bc1823 !important;">DASHBOARD</h2>
+                <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
+                    <li><a href="pcg_dashboard.php"><i style="font-size: 20px;" class="material-icons">home</i>
+                            Dashboard</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">crisis_alert</i>
+                        Posts Incedents
+                    </li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">check</i>
+                        Approved Complain
+                    </li>
+                </ol>
             </div>
-            <!-- Widgets -->
-            <div class="row clearfix">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pcg_pending.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">pending</i>
-                        </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">PENDING COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_pending ?></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pcg_approved.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">check</i>
+            <!-- CPU Usage -->
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2 class="m-0" style="font-size: 25px; font-weight: 900; color: #bc1823;">
+                                APPROVED COMPLAIN
+                            </h2>
                         </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">APPROVE COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $get_total_incidents_approved ?></div>
+                        <div class="body">
+
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['approved_success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['approved_success']; ?>
+                                    <?php unset($_SESSION['approved_success']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['approved_errors'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['approved_errors']; ?>
+                                    <?php unset($_SESSION['approved_errors']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Complainant</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Location</th>
+                                            <th>Landmark</th>
+                                            <th>Date/Time</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($complaints as $complaint): ?>
+                                            <tr>
+                                                <td><?php echo $complaint['fullname']; ?></td>
+                                                <td><?php echo $complaint['incident_type']; ?></td>
+                                                <td><?php echo $complaint['incident_description']; ?></td>
+                                                <td><?php echo $complaint['incident_location_map']; ?></td>
+                                                <td><?php echo $complaint['incident_landmark']; ?></td>
+                                                <td><?php echo $complaint['incident_datetime']; ?></td>
+                                                <td style="color: orange; font-weight: 900;"><?php echo $complaint['status']; ?></td>
+                                                <td>
+                                                    <a href="view_approved_incident.php?incident_id=<?php echo $complaint['incident_id']; ?>" class="btn btn-warning sm">View Information</a>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
     </section>
-
-
 
     <!-- Jquery Core Js -->
     <script src="../plugins/jquery/jquery.min.js"></script>
@@ -300,7 +319,7 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Jquery Validation Plugin Css -->
     <script src="../plugins/jquery-validation/jquery.validate.js"></script>
-    <script src="../js/pages/forms/form-validation.js"></script>
+    <script src="js/pages/forms/form-validation.js"></script>
 
     <!-- Waves Effect Plugin Js -->
     <script src="../plugins/node-waves/waves.js"></script>

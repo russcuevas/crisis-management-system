@@ -1,69 +1,64 @@
 <?php
+session_start();
 include '../../database/connection.php';
 
-session_start();
 $responder_id = $_SESSION['responder_id'];
 if (!isset($responder_id)) {
     header('location:../../login.php');
+    exit();
 }
 
-// GET THE TOTAL INCIDENTS PENDING
-$sql = "SELECT type FROM tbl_responders WHERE id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->execute([$responder_id]);
-$responder = $stmt->fetch(PDO::FETCH_ASSOC);
+// query change password
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['change-password'])) {
+        $old_password = $_POST['old_password'];
+        $new_password = $_POST['password'];
+        $confirm_password = $_POST['password_confirmation'];
 
-if (!$responder) {
-    die("Responder not found.");
+        $hashed_old_password = sha1($old_password);
+        $hashed_new_password = sha1($new_password);
+        $hashed_confirm_password = sha1($confirm_password);
+
+        if ($hashed_new_password !== $hashed_confirm_password) {
+            $_SESSION['change_errors'] = 'New password and confirm password do not match.';
+            header('Location: change_details.php');
+            exit();
+        }
+
+        $sql = "SELECT password FROM tbl_responders WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':id', $responder_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result === false) {
+            $_SESSION['change_errors'] = 'Error updating password.';
+            header('Location: change_details.php');
+            exit();
+        }
+
+        if ($hashed_old_password !== $result['password']) {
+            $_SESSION['change_errors'] = 'Old password is incorrect';
+            header('Location: change_details.php');
+            exit();
+        }
+
+        $update_sql = "UPDATE tbl_responders SET password = :new_password WHERE id = :id";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bindParam(':new_password', $hashed_new_password, PDO::PARAM_STR);
+        $update_stmt->bindParam(':id', $responder_id, PDO::PARAM_INT);
+
+        if ($update_stmt->execute()) {
+            $_SESSION['change_success'] = 'Password updated successfully.';
+            header('Location: change_details.php');
+            exit();
+        } else {
+            $_SESSION['change_errors'] = 'Error updating password.';
+            header('Location: change_details.php');
+            exit();
+        }
+    }
 }
-
-$responder_type = $responder['type'];
-
-$sql = "SELECT id FROM tbl_responders WHERE type = ?";
-$stmt = $conn->prepare($sql);
-$stmt->execute([$responder_type]);
-$similar_responders = $stmt->fetchAll(PDO::FETCH_COLUMN);
-$pnp_conditions = implode(' OR ', array_map(fn($id) => "JSON_CONTAINS(tbl_incidents.respondents_id, '\"$id\"')", $similar_responders));
-
-$sql = "SELECT COUNT(*) AS total_incidents_pending 
-        FROM `tbl_incidents` 
-        WHERE status = 'Pending' 
-        AND ($pnp_conditions)";
-
-$stmt_total_incidents_pending = $conn->prepare($sql);
-$stmt_total_incidents_pending->execute();
-$result_total_incidents_pending = $stmt_total_incidents_pending->fetch(PDO::FETCH_ASSOC);
-
-$total_incidents_pending = $result_total_incidents_pending['total_incidents_pending'];
-
-// GET THE TOTAL INCIDENTS APPROVED
-$get_total_incidents_approved = "SELECT COUNT(*) AS get_total_incidents_approved FROM `tbl_incidents` WHERE status = 'Approved'";
-$stmt_get_total_incidents_approved = $conn->prepare($get_total_incidents_approved);
-$stmt_get_total_incidents_approved->execute();
-$restult_get_total_incidents_approved = $stmt_get_total_incidents_approved->fetch(PDO::FETCH_ASSOC);
-$get_total_incidents_approved = $restult_get_total_incidents_approved['get_total_incidents_approved'];
-// END GET TOTAL INCIDENTS APPROVED
-
-// GET PENDING COMPLAINTS
-$sql = "SELECT tbl_incidents.*, tbl_users.fullname 
-        FROM tbl_incidents 
-        LEFT JOIN tbl_users ON tbl_incidents.user_id = tbl_users.id 
-        WHERE tbl_incidents.status = 'pending'";
-$complaints = $conn->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-// END GET PENDING COMPLAINTS
-
-
-// Fetch fire incidents grouped by month
-$query = "SELECT MONTH(created_at) AS month, COUNT(*) AS fire_incidents 
-          FROM tbl_reports 
-          WHERE incident_type = 'Fire'
-          GROUP BY MONTH(created_at)
-          ORDER BY MONTH(created_at)";
-
-// Prepare and execute the query
-$stmt = $conn->prepare($query);
-$stmt->execute();
-
 
 // applicable to all page
 // fetching notifs
@@ -123,6 +118,7 @@ $unread_count = $result_count_notifications['unread_count'];
 //end applicable to all page
 
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -155,6 +151,9 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Custom Css -->
     <link href="../css/style.css" rel="stylesheet">
     <link href="../css/themes/all-themes.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
 
     </style>
@@ -181,7 +180,7 @@ $unread_count = $result_count_notifications['unread_count'];
     <!-- Overlay For Sidebars -->
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
-
+    <!-- Top Bar -->
     <!-- TOP BAR -->
     <?php include('top_bar.php')  ?>
     <!-- END TOP BAR -->
@@ -190,7 +189,7 @@ $unread_count = $result_count_notifications['unread_count'];
         <aside id="leftsidebar" class="sidebar">
             <div class="menu">
                 <ul class="list">
-                    <li class="active">
+                    <li class="">
                         <a href="pcg_dashboard.php">
                             <i class="material-icons">home</i>
                             <span>Dashboard</span>
@@ -251,43 +250,79 @@ $unread_count = $result_count_notifications['unread_count'];
                 </div>
             </div>
         </aside>
-        <!-- #END# Right Sidebar -->
     </section>
 
     <section class="content">
         <div class="container-fluid">
             <div class="block-header">
-                <h2 style="font-size: 25px; font-weight: 900; color: #bc1823 !important;">DASHBOARD</h2>
+                <ol style="font-size: 15px;" class="breadcrumb breadcrumb-col-red">
+                    <li><a href="pcg_dashboard.php"><i style="font-size: 20px;" class="material-icons">groups</i>
+                            Dashboard</a></li>
+                    <li class="active"><i style="font-size: 20px;" class="material-icons">edit</i>
+                        Change details
+                    </li>
+                </ol>
             </div>
-            <!-- Widgets -->
             <div class="row clearfix">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pcg_pending.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">pending</i>
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="header">
+                            <h2>Update password</h2>
                         </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">PENDING COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $total_incidents_pending ?></div>
-                        </div>
-                    </div>
-                </div>
+                        <div class="body">
 
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" onclick="window.location.href='pcg_approved.php'">
-                    <div style="cursor: pointer;" class="info-box bg-red hover-expand-effect">
-                        <div class="icon">
-                            <i class="material-icons">check</i>
-                        </div>
-                        <div class="content">
-                            <div class="text" style="color: white !important;">APPROVE COMPLAIN</div>
-                            <div class="" style="font-size: 20px;"><?php echo $get_total_incidents_approved ?></div>
+                            <!-- ALERTS -->
+                            <?php if (isset($_SESSION['change_success'])): ?>
+                                <div class="alert alert-success">
+                                    <?php echo $_SESSION['change_success']; ?>
+                                    <?php unset($_SESSION['change_success']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (isset($_SESSION['change_errors'])): ?>
+                                <div class="alert alert-danger">
+                                    <?php echo $_SESSION['change_errors']; ?>
+                                    <?php unset($_SESSION['change_errors']);
+                                    ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form id="form_validation" method="POST" action="">
+                                <div class="form-group form-float">
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Old Password</label>
+                                    <div class="form-line">
+                                        <input type="password" class="form-control" name="old_password" required>
+                                    </div>
+                                    <div id="error-old_password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">New Password</label>
+                                    <div class="form-line">
+                                        <input type="password" class="form-control" name="password" maxlength="12" minlength="6" required>
+                                    </div>
+                                    <div id="error-password" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
+                                </div>
+
+                                <div class="form-group form-float">
+                                    <label style="color: #212529; font-weight: 600;" class="form-label">Confirm Password</label>
+                                    <div class="form-line">
+                                        <input type="password" class="form-control" name="password_confirmation" maxlength="12" minlength="6" required>
+                                    </div>
+                                    <div id="error-password_confirmation" class="error-message" style="font-size:12px; margin-top:5px; font-weight:900; color: red;"></div>
+                                </div>
+
+                                <div class="align-right">
+                                    <button type="submit" name="change-password" class="btn bg-red waves-effect">Save Changes</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- #END# Basic Validation -->
     </section>
-
-
 
     <!-- Jquery Core Js -->
     <script src="../plugins/jquery/jquery.min.js"></script>
@@ -342,6 +377,8 @@ $unread_count = $result_count_notifications['unread_count'];
 
     <!-- Demo Js -->
     <script src="../js/demo.js"></script>
+
+
 </body>
 
 </html>
