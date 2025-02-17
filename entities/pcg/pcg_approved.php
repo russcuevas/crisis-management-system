@@ -310,7 +310,7 @@ $unread_count = $result_count_notifications['unread_count'];
                                                 <td><?php echo $complaint['incident_location_map']; ?></td>
                                                 <td><?php echo $complaint['incident_landmark']; ?></td>
                                                 <td><?php echo $complaint['incident_datetime']; ?></td>
-                                                <td style="color: orange; font-weight: 900;"><?php echo $complaint['status']; ?></td>
+                                                <td style="color: green; font-weight: 900;"><?php echo $complaint['status']; ?></td>
                                                 <td>
                                                     <a href="view_approved_incident.php?incident_id=<?php echo $complaint['incident_id']; ?>" class="btn btn-warning sm">View Information</a>
                                                 </td>
