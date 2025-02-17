@@ -3,8 +3,10 @@ include '../../database/connection.php';
 
 session_start();
 $responder_id = $_SESSION['responder_id'] ?? null;
-if (!$responder_id) {
-    header('location:../../login.php');
+$responder_type = $_SESSION['responder_type'] ?? null;
+
+if (!$responder_id || $responder_type !== 'Bureau of Fire') {
+    header('Location: ../../login.php');
     exit();
 }
 

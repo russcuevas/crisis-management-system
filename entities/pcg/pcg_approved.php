@@ -1,11 +1,13 @@
 <?php
 include '../../database/connection.php';
 
-session_start();
 
-$responder_id = $_SESSION['responder_id'];
-if (!isset($responder_id)) {
-    header('location:../../login.php');
+session_start();
+$responder_id = $_SESSION['responder_id'] ?? null;
+$responder_type = $_SESSION['responder_type'] ?? null;
+
+if (!$responder_id || $responder_type !== 'Philippine Coast Guard') {
+    header('Location: ../../login.php');
     exit();
 }
 
