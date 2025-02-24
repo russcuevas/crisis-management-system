@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 08, 2024 at 02:57 PM
+-- Generation Time: Feb 24, 2025 at 02:45 PM
 -- Server version: 10.4.27-MariaDB
 -- PHP Version: 8.2.0
 
@@ -40,7 +40,7 @@ CREATE TABLE `tbl_admin` (
 --
 
 INSERT INTO `tbl_admin` (`id`, `email`, `password`, `created_at`, `updated_at`) VALUES
-(3, 'admin@gmail.com', 'fc1c7b65ab0906b2a9c240e56d7ec96f5dee92f7', '2024-12-08 13:53:51', '2024-12-08 13:53:51');
+(3, 'admin@gmail.com', 'fc1c7b65ab0906b2a9c240e56d7ec96f5dee92f7', '2024-12-08 13:53:51', '2025-01-27 13:49:41');
 
 -- --------------------------------------------------------
 
@@ -67,6 +67,7 @@ CREATE TABLE `tbl_feedback` (
 CREATE TABLE `tbl_incidents` (
   `incident_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `respondents_id` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`respondents_id`)),
   `incident_type` varchar(255) NOT NULL,
   `incident_description` text DEFAULT NULL,
   `incident_proof` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`incident_proof`)),
@@ -122,6 +123,32 @@ CREATE TABLE `tbl_reports` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tbl_responders`
+--
+
+CREATE TABLE `tbl_responders` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `fullname` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_responders`
+--
+
+INSERT INTO `tbl_responders` (`id`, `email`, `password`, `fullname`, `type`, `created_at`, `updated_at`) VALUES
+(6, 'pcg@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'PCG 1', 'Philippine Coast Guard', '2025-02-16 03:57:50', '2025-02-16 03:57:50'),
+(7, 'pnp@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'PNP 1', 'Philippine National Police', '2025-02-16 03:58:19', '2025-02-16 03:58:19'),
+(8, 'bfp@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'BFP 1', 'Bureau of Fire', '2025-02-16 03:58:44', '2025-02-16 03:58:44'),
+(9, 'pho@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'PHO 1', 'Provincial Health Office', '2025-02-16 03:59:00', '2025-02-16 03:59:00');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tbl_users`
 --
 
@@ -141,6 +168,13 @@ CREATE TABLE `tbl_users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_users`
+--
+
+INSERT INTO `tbl_users` (`id`, `profile_picture`, `email`, `password`, `fullname`, `contact`, `purok`, `barangay`, `municipality`, `province`, `is_verified`, `code`, `created_at`, `updated_at`) VALUES
+(22, NULL, 'russelcuevas0@gmail.com', 'f7c3bc1d808e04732adf679965ccc34ca7ae3441', 'Russel Vincent Cuevas', '09495748302', 'Purok 4', 'Calingatan', 'Mataasnakahoy', 'Batangas', 1, '', '2025-02-24 13:22:09', '2025-02-24 13:22:32');
 
 --
 -- Indexes for dumped tables
@@ -182,6 +216,12 @@ ALTER TABLE `tbl_reports`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `tbl_responders`
+--
+ALTER TABLE `tbl_responders`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
@@ -196,37 +236,43 @@ ALTER TABLE `tbl_users`
 -- AUTO_INCREMENT for table `tbl_admin`
 --
 ALTER TABLE `tbl_admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tbl_feedback`
 --
 ALTER TABLE `tbl_feedback`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `tbl_incidents`
 --
 ALTER TABLE `tbl_incidents`
-  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `incident_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `tbl_notifications`
 --
 ALTER TABLE `tbl_notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `tbl_reports`
 --
 ALTER TABLE `tbl_reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+
+--
+-- AUTO_INCREMENT for table `tbl_responders`
+--
+ALTER TABLE `tbl_responders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
